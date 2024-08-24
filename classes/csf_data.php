@@ -44,12 +44,14 @@ class CSF_Data
         if ($emable_csf_cache_meta) {
             $table_name = $wpdb->prefix . 'csf_cache_metadata';
             $cache_metadata = [];
-            $sql_query = $wpdb->prepare(
-                "SELECT * FROM $table_name WHERE post_type = %s AND filter_meta_key = %s",
-                $post_type,
-                $meta_key
+            $results = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM %s WHERE post_type = %s AND filter_meta_key = %s",
+                    $table_name,
+                    $post_type,
+                    $meta_key
+                )
             );
-            $results = $wpdb->get_results($sql_query);
         }
         if ($results) {
             foreach ($results as $key => $result) {
@@ -138,8 +140,8 @@ class CSF_Data
      */
     public static function check_add_meta_info($meta_info, $meta_val, $metadata_reference = '', $return_field_term_id = false)
     {
-        $meta_val_parent =  $meta_val_term_id =  $meta_val_slug = '';
-        $meta_val_name = $meta_val;
+        $meta_val_parent =  $meta_val_term_id = '';
+        $meta_val_slug = $meta_val_name = $meta_val;
         if ($metadata_reference) {
             $reference = self::check_metadata_reference($meta_val, $metadata_reference);
             $meta_val_term_id = $reference['meta_val_term_id'];
@@ -273,8 +275,14 @@ class CSF_Data
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'csf_cache_metadata'; // Define your table name
+        $find_table_name = $wpdb->get_var(
+            $wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $table_name
+            )
+        );
 
-        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+        if ($find_table_name != $table_name) {
             self::create_csf_cache_table();
         }
     }
@@ -283,16 +291,31 @@ class CSF_Data
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'csf_cache_metadata'; // Define your table name
-
+        $find_table_name = $wpdb->get_var(
+            $wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $table_name
+            )
+        );
         // Run the query
-        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+        if ($find_table_name == $table_name) {
             // SQL query to drop the table
-            $sql = "DROP TABLE IF EXISTS $table_name;";
-            $wpdb->query($sql);
+            $results = $wpdb->query(
+                $wpdb->prepare(
+                    "DROP TABLE IF EXISTS %s",
+                    $table_name
+                )
+            );
         }
 
         // Check if the table was successfully deleted
-        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+        $find_table_name_check_again = $wpdb->get_var(
+            $wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $table_name
+            )
+        );
+        if ($find_table_name_check_again != $table_name) {
             return true;
         } else {
             return false;
@@ -326,13 +349,15 @@ class CSF_Data
             'count' => $count,
         ];
         $table_data_format = ['%s', '%s', '%s', '%d', '%s', '%d'];
-        $sql_query = $wpdb->prepare(
-            "SELECT * FROM $table_name WHERE post_type = %s AND filter_meta_key = %s AND meta_value = %s",
-            $post_type,
-            $filter_meta_key,
-            $meta_value
+        $results = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM %s WHERE post_type = %s AND filter_meta_key = %s AND meta_value = %s",
+                $table_name,
+                $post_type,
+                $filter_meta_key,
+                $meta_value
+            )
         );
-        $results = $wpdb->get_row($sql_query);
         if ($results) {
             $count_increase  = isset($data['count_increase']) ? $data['count_increase'] : true;
             $count_val = ($count_increase) ? (int)$results->count + 1 : (int)$results->count - 1;
@@ -381,9 +406,7 @@ class CSF_Data
     // 
     public function check_post_fields_value($current_result, $form_field_name, $metadata_reference, $new_array_val = [], $return_field_term_id = false)
     {
-
         $fields = explode('{array}', $form_field_name);
-        var_dump($fields);
         $field = isset($fields[1]) ? $fields[1] : $fields[0];
         $field = ($field) ? $field : $fields[0];
         if ($field) {
@@ -400,10 +423,22 @@ class CSF_Data
     //  https://developer.wordpress.org/reference/hooks/wp_insert_post_data/
     public function before_post_save_csf_cache_metadata($post_id)
     {
+        // Check if the current user has permission to edit the post
+        if (! current_user_can('edit_post', $post_id)) {
+            return;
+        }
+
+        // Avoid auto-save, bulk edits, or other non-standard post saving events
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return;
         }
 
+        // Verify the default _wpnonce (WordPress automatically generates this for saving posts)
+        if (! isset($_POST['_wpnonce']) || ! check_admin_referer('update-post_' . $post_id)) {
+            return;
+        }
+
+        // 
         if ($post_id) {
             $fields = \csf_search_filter\CSF_Fields::set_csf_cache_metadata_fields();
             if ($fields) {

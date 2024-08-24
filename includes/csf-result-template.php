@@ -16,9 +16,9 @@ if (!$apply_only_on_show_result || empty($apply_only_on_show_result)) {
         return false;
     }
     $csf_query = $wp_query;
-    var_dump('apply_only_on_show_result faaaaaaaaa');
+    var_dump('apply_only_on_show_result false');
 } else {
-    var_dump('apply_only_on_show_result trrrrrrrrrrr');
+    var_dump('apply_only_on_show_result true');
     $csf_query = new WP_Query(['post_type' => $settings['filter_setting_post_type']]);
     // $search_filter_query = new \csf_search_filter\search_filter_query();
     // $csf_query = $search_filter_query->csf_query($settings, $csf_query, true);

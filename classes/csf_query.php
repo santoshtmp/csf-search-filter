@@ -80,6 +80,11 @@ class CSF_Query
             $query->set('posts_per_page', $posts_per_page);
         }
 
+        // Verify _csf_nonce
+        if (!isset($_GET['_csf_nonce']) || !wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
+            return '';
+        }
+        
         // search fields
         $post_type = (isset($fields_settings['post_type'])) ? $fields_settings['post_type'] : 'page';
         $fields = $fields_settings['fields'];
@@ -225,9 +230,6 @@ class CSF_Query
                 }
             }
         }
-
-
-
 
         $custom_search_post['tax_query'] = $tax_query;
         $custom_search_post['meta_query'] = $meta_query;
@@ -382,14 +384,17 @@ class CSF_Query
     {
         global $wpdb;
         $search_term = '%' . $wpdb->esc_like($search_text) . '%';
-        $query = $wpdb->prepare("
-            SELECT t.name, t.term_id, t.slug
-            FROM {$wpdb->terms} t
-            INNER JOIN {$wpdb->term_taxonomy} tt ON t.term_id = tt.term_id
-            WHERE tt.taxonomy = %s
-            AND t.name LIKE %s
-        ", $taxonomy, $search_term);
-        $results = $wpdb->get_results($query);
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT t.name, t.term_id, t.slug
+                FROM {$wpdb->terms} t
+                INNER JOIN {$wpdb->term_taxonomy} tt ON t.term_id = tt.term_id
+                WHERE tt.taxonomy = %s
+                AND t.name LIKE %s",
+                $taxonomy,
+                $search_term
+            )
+        );
         return $results;
     }
 

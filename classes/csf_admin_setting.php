@@ -50,7 +50,7 @@ class CSF_Admin_setting
         register_setting('search-filter-csf-setting', 'csf_set_search_fields');
         register_setting('search-filter-csf-setting', 'csf_cache_metadata_fields');
 
-       
+
         $section_id = 'settigs_fields_section';
         // Register a new section in the "search-filter-csf" page
         add_settings_section(
@@ -122,8 +122,6 @@ class CSF_Admin_setting
                 left: 0px !important;
             }
         </style>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ext-beautify.js"></script>
     <?php
         \csf_search_filter\CSF_Enqueue::csf_admin_setting_js();
     }
@@ -188,18 +186,20 @@ class CSF_Admin_setting
     public function csf_set_search_fields_callback()
     {
         $value = (get_option('csf_set_search_fields')) ?: '';
+        $close_icon = csf_path_url . 'assets/icon/close.svg';
+
     ?>
-        <textarea id="csf_set_search_fields" name="csf_set_search_fields" style="display: none;"><?php echo $value; ?></textarea>
+        <textarea id="csf_set_search_fields" name="csf_set_search_fields" style="display: none;"><?php echo esc_attr($value); ?></textarea>
         <div class="info" style="margin-bottom: 7px;">
             <button type="button" id="csf_set_search_fields_format">Format Code</button>
             <button type="button" class="btn btn-primary" data-action="csf_set_search_fields_default"> Set Default Value</button>
             <button type="button" class="help_btn" help-info-id="csf_search_fields_help_desc">
                 Set Search Field Help
-                <img src="<?php echo _e(csf_path_url . 'assets/icon/close.svg') ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
+                <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
             <button type="button" class="help_btn" help-info-id="csf_form_display_help_desc">
                 Form Display Help
-                <img src="<?php echo _e(csf_path_url . 'assets/icon/close.svg') ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
+                <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
         </div>
         <div id="csf_search_fields_help_desc" class="help-info" style="display: none; ">
@@ -266,21 +266,22 @@ class CSF_Admin_setting
                 <li> $search_form['data_url'] = 'data_action_url'; default current_post_archive_url </li>
             </ol>
         </div>
-        <div id="csf_set_search_fields_editor"><?php echo ($value) ? $value : ''; ?></div>
+        <div id="csf_set_search_fields_editor"><?php echo esc_attr(($value) ? $value : ''); ?></div>
     <?php
     }
 
     public function csf_cache_metadata_fields_callback()
     {
         $value = (get_option('csf_cache_metadata_fields')) ?: '';
+        $close_icon = csf_path_url . 'assets/icon/close.svg';
     ?>
-        <textarea id="csf_cache_metadata_fields" name="csf_cache_metadata_fields" style="display: none;"><?php echo $value; ?></textarea>
+        <textarea id="csf_cache_metadata_fields" name="csf_cache_metadata_fields" style="display: none;"><?php echo esc_attr($value); ?></textarea>
         <div class="info" style="margin-bottom: 7px;">
             <button type="button" id="csf_cache_metadata_fields_format">Format Code</button>
             <button type="button" class="btn btn-primary" id="csf_cache_metadata_fields_default"> Set Default Value</button>
             <button type="button" class="help_btn" help-info-id="csf_cache_metadata_fields_help_desc">
                 Set Cache Field Help
-                <img src="<?php echo _e(csf_path_url . 'assets/icon/close.svg') ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
+                <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
         </div>
         <div id="csf_cache_metadata_fields_help_desc" class="help-info" style="display: none;">
@@ -313,7 +314,7 @@ class CSF_Admin_setting
             </ol>
 
         </div>
-        <div id="csf_cache_metadata_fields_editor"><?php echo $value; ?></div>
+        <div id="csf_cache_metadata_fields_editor"><?php echo esc_attr($value); ?></div>
 <?php
     }
 

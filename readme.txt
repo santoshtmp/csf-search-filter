@@ -1,5 +1,5 @@
 === CSF - Search Filter ===
-Tags: CSF, search fiter form, search filter query
+Tags: CSF, form, query
 Author: santoshtmp
 Author URI: https://github.com/santoshtmp
 Plugin URI: https://github.com/santoshtmp/csf-search-filter
@@ -9,7 +9,7 @@ Tested up to: 6.6.1
 Requires PHP: 8.0
 Domain Path: languages
 Text Domain: csf-search-filter
-Stable tag: 1.0.0
+Stable tag: 1.0
 Version: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html

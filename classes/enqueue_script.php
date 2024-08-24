@@ -40,8 +40,29 @@ class CSF_Enqueue
 
     public static function csf_admin_setting_js()
     {
+        // ace-editor
+        wp_enqueue_script(
+            'ace-editor-csf',
+            'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js',
+            array('jquery'),
+            '1.0',
+            array(
+                'in_footer' => true,
+                'strategy' => 'defer'
+            )
+        );
+        wp_enqueue_script(
+            'ace-ext-beautify-csf',
+            'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ext-beautify.js',
+            array('jquery'),
+            '1.0',
+            array(
+                'in_footer' => true,
+                'strategy' => 'defer'
+            )
+        );
+        // csf js
         $js_file_path = csf_path_url . 'assets/js/csf_admin_settings.js';
-
         wp_enqueue_script(
             'csf_admin_settings',
             $js_file_path,
@@ -57,8 +78,8 @@ class CSF_Enqueue
         $default_search_fields = \csf_search_filter\CSF_Fields::set_search_fields(true);
         $default_cache_metadata_fields = \csf_search_filter\CSF_Fields::set_csf_cache_metadata_fields(true);
         wp_localize_script('csf_admin_settings', 'csf_obj', array(
-            'default_search_fields' => ($default_search_fields) ? json_encode($default_search_fields) : '',
-            'default_cache_metadata_fields' => ($default_cache_metadata_fields) ? json_encode($default_cache_metadata_fields) : '',
+            'default_search_fields' => ($default_search_fields) ? wp_json_encode($default_search_fields) : '',
+            'default_cache_metadata_fields' => ($default_cache_metadata_fields) ? wp_json_encode($default_cache_metadata_fields) : '',
         ));
     }
 

@@ -44,13 +44,16 @@ class CSF_Form
             echo "search filter fields/settings are not set/defind";
             return;
         }
+        $search_filter_title = (isset($fields_settings['search_filter_title'])) ? $fields_settings['search_filter_title'] : 'Filters';
         \csf_search_filter\CSF_Enqueue::csf_search_js($form_id, 'csf-result-area'); ?>
         <div class="search-form-wrapper">
             <h2 class='search-filter-title font-semibold text-sm m-4 mt-0'>
-                <?php echo (isset($fields_settings['search_filter_title'])) ? $fields_settings['search_filter_title'] : 'Filters'; ?>
+                <?php echo esc_attr($search_filter_title); ?>
             </h2>
-            <form id="<?php echo $form_id; ?>" action="" method="GET" class='<?php echo $form_class; ?>' data-url=<?php echo $data_url; ?> role="search">
+            <form id="<?php echo esc_attr($form_id); ?>" action="" method="GET" class='<?php echo esc_attr($form_class); ?>' data-url=<?php echo esc_attr($data_url); ?> role="search">
                 <?php
+                // setup csf_nonce
+                wp_nonce_field('csf_nonce', '_csf_nonce', true, true);
                 // check and display each search filter field
                 $fields = $fields_settings['fields'];
                 foreach ($fields as $key => $field) {
@@ -117,12 +120,19 @@ class CSF_Form
     // form free search text area
     public static function search_text_field($field)
     {
-        $search = isset($_GET['search']) ? $_GET['search'] : '';  ?>
+        $search = '';
+        if (isset($_GET['_csf_nonce']) && wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
+            $search = isset($_GET['search']) ? $_GET['search'] : '';
+        } ?>
         <div class="filter-block search-box" filter-action="free-search">
             <span class='search-icon'>
-                <?php echo useSVG('search-icon'); ?>
+                <?php
+                if (function_exists('useSVG')) {
+                    echo useSVG('search-icon');
+                }
+                ?>
             </span>
-            <input type="text" id="search_input" class='search-input' name="search" value="<?php echo $search; ?>" placeholder="<?php echo $field['placeholder']; ?>">
+            <input type="text" id="search_input" class='search-input' name="search" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr($field['placeholder']); ?>">
         </div>
     <?php
     }
@@ -130,13 +140,16 @@ class CSF_Form
     // form dropdown_field fild
     public static function dropdown_field($filter_title, $name, $filter_items, $show_count = 0)
     {
-        $select_dropdown = isset($_GET[$name]) ? $_GET[$name] : '';
+        $select_dropdown = '';
+        if (isset($_GET['_csf_nonce']) && wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
+            $select_dropdown = isset($_GET[$name]) ? $_GET[$name] : '';
+        }
         wp_enqueue_style('select2');
         wp_enqueue_script('select2'); ?>
         <div class="filter-block sort-wrapper <?php echo ($select_dropdown) ? 'active' : ''; ?>">
-            <select name="<?php echo $name; ?>" id="<?php echo $name; ?>" data-type="<?php echo $name; ?>">
+            <select name="<?php echo esc_attr($name); ?>" id="<?php echo esc_attr($name); ?>" data-type="<?php echo esc_attr($name); ?>">
                 <option value="">
-                    <?php echo $filter_title; ?>
+                    <?php echo esc_attr($filter_title); ?>
                 </option>
                 <?php
                 foreach ($filter_items as $each_key => $value) {
@@ -171,14 +184,17 @@ class CSF_Form
     // form checkbox_field field
     public static function checkbox_field($filter_title, $field_name, $filter_items, $show_count = 0)
     {
-        $active_filter = isset($_GET['active_filter']) ? $_GET['active_filter'] : '';
+        $active_filter = $select_checkbox = '';
+        if (isset($_GET['_csf_nonce']) && wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
+            $active_filter = isset($_GET['active_filter']) ? $_GET['active_filter'] : '';
+            $select_checkbox = isset($_GET[$field_name]) ? $_GET[$field_name] : [];
+        }
         $active_filter = ($active_filter == $field_name) ? 'active' : '';
-        $select_checkbox = isset($_GET[$field_name]) ? $_GET[$field_name] : [];
         $filter_active_class = ($select_checkbox) ? 'active' : $active_filter; ?>
-        <div class="filter-block accordion <?php echo $filter_active_class; ?>">
-            <div class="filter-title accordion__title-container <?php echo $filter_active_class; ?>">
+        <div class="filter-block accordion <?php echo esc_attr($filter_active_class); ?>">
+            <div class="filter-title accordion__title-container <?php echo esc_attr($filter_active_class); ?>">
                 <div class='title flex gap-x-1.5 items-center'>
-                    <?php echo $filter_title; ?>
+                    <?php echo esc_attr($filter_title); ?>
                 </div>
             </div>
             <div class="filter-item-list accordion__body">
@@ -194,10 +210,10 @@ class CSF_Form
                         <div class="filter-item">
                             <div class="checkbox-input-wrapper ">
                                 <div class='filter-input-wrapper custom-checkbox'>
-                                    <input type="checkbox" name="<?php echo $field_name . '[]'; ?>" id="<?php echo $field_name . '-' . $value['slug']; ?>" value="<?php echo $value['slug']; ?>" <?php echo  $checkbox_checked; ?>>
+                                    <input type="checkbox" name="<?php echo esc_attr($field_name) . '[]'; ?>" id="<?php echo esc_attr($field_name) . '-' . $value['slug']; ?>" value="<?php echo $value['slug']; ?>" <?php echo  $checkbox_checked; ?>>
                                     <span class='checkmark'></span>
                                 </div>
-                                <label class='filter-item-label flex gap-x-1.5 items-center' for="<?php echo $field_name . '-' . $value['slug']; ?>">
+                                <label class='filter-item-label flex gap-x-1.5 items-center' for="<?php echo esc_attr($field_name) . '-' . $value['slug']; ?>">
                                     <div>
                                         <span class="label-name"><?php echo $value['name']; ?></span>
                                         <?php
