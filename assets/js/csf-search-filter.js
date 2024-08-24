@@ -34,7 +34,7 @@ jQuery(function ($) {
      * @returns
      */
     function get_XMLHttpRequest_Data(filtr_result_area_id = '', submission_link = '', callback) {
-        let filtr_result_area = filtr_result_area_id ? '#' + filtr_result_area_id : '#csf-filter-result-area';
+        let filtr_result_area = filtr_result_area_id ? '#' + filtr_result_area_id : '#csf-result-area';
         submission_link = submission_link ? submission_link : filter_form.attr('data-url') + '/?' + filter_form.serialize();
         var filter_area = $(filtr_result_area);
         filter_area.css('opacity', '0.6');

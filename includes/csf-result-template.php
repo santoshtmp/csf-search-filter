@@ -1,8 +1,13 @@
 <?php
 
 /**
- * custom search filter result default template
+ * search filter result default template
  */
+
+//  this is not completed; under development
+return '';
+
+
 $result_area_id = isset($settings['search_filter_result_area_id']) ? $settings['search_filter_result_area_id'] : 'csf-filter-result-area';
 $apply_only_on_show_result = (isset($settings['apply_only_on_show_result'])) ? $settings['apply_only_on_show_result'] : '';
 if (!$apply_only_on_show_result || empty($apply_only_on_show_result)) {
@@ -15,8 +20,8 @@ if (!$apply_only_on_show_result || empty($apply_only_on_show_result)) {
 } else {
     var_dump('apply_only_on_show_result trrrrrrrrrrr');
     $csf_query = new WP_Query(['post_type' => $settings['filter_setting_post_type']]);
-    $search_filter_query = new \custom_search_filter\search_filter_query();
-    $csf_query = $search_filter_query->csf_query($settings, $csf_query, true);
+    // $search_filter_query = new \csf_search_filter\search_filter_query();
+    // $csf_query = $search_filter_query->csf_query($settings, $csf_query, true);
 }
 // var_dump($csf_query);
 
