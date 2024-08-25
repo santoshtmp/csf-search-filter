@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Plugin URI: https://github.com/santoshtmp
+ * Plugin URI: https://github.com/santoshtmp/csf-search-filter
  * Version: 1.0
  * Author: santoshtmp
  * =======================================
@@ -33,8 +33,8 @@ class CSF_Admin_setting
     public function this_plugin_settings_submenu()
     {
         add_options_page(
-            'CSF', // Page title
-            'CSF', // Menu title
+            'CSF - Search Filter', // Page title
+            'CSF - Search Filter', // Menu title
             'manage_options',     // Capability required to see the menu
             self::$page_slug, // Menu slug
             [$this, 'csf_setting_page_callback'] // Function to display the page content
@@ -69,17 +69,17 @@ class CSF_Admin_setting
         );
 
         add_settings_field(
-            'csf_cache_metadata_fields',
-            'CSF Cache Meta Fields',
-            [$this, 'csf_cache_metadata_fields_callback'],
+            'enable_csf_cache_meta',
+            'Enable CSF cache metadata ',
+            [$this, 'enable_csf_cache_meta_callback'],
             self::$page_slug,
             $section_id
         );
 
         add_settings_field(
-            'enable_csf_cache_meta',
-            'Enable CSF cache metadata ',
-            [$this, 'enable_csf_cache_meta_callback'],
+            'csf_cache_metadata_fields',
+            'CSF Cache Meta Fields',
+            [$this, 'csf_cache_metadata_fields_callback'],
             self::$page_slug,
             $section_id
         );
@@ -153,9 +153,7 @@ class CSF_Admin_setting
     <?php
     }
 
-
-
-    // 
+    // reset csf cache meta data
     function reset_csf_cache_meta_callback()
     {
         $default_value = 1;
@@ -167,6 +165,8 @@ class CSF_Admin_setting
                 \csf_search_filter\CSF_Data::clear_delete_csf_cache_table();
                 \csf_search_filter\CSF_Data::set_enable_csf_cache_table();
                 echo "CSF Cache metadata is sucessfully reset  <br>";
+                update_option('reset_csf_cache_meta', 0);
+                $default_value = 0;
             } else {
                 echo "First enable csf_cache_meta <br>";
                 $checked = 'Checked';
@@ -201,10 +201,15 @@ class CSF_Admin_setting
                 Form Display Help
                 <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
+            <button type="button" class="help_btn" help-info-id="csf_result_display_help_desc">
+                CSF Result Display Help
+                <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
+            </button>
         </div>
-        <div id="csf_search_fields_help_desc" class="help-info" style="display: none; ">
-            <h4>CSF Search Fields JSON format fields settings are as defined:</h4>
-            <pre>csf_search_filter = {
+        <div style="margin-bottom: 7px;">
+            <div id="csf_search_fields_help_desc" class="help-info" style="display: none; ">
+                <h4>CSF Search Fields JSON format fields settings are as defined:</h4>
+                <pre>csf_search_filter = {
                         "unique_filter_name":{
                             "post_type":"post_type",
                             "posts_per_page":12,
@@ -218,53 +223,89 @@ class CSF_Admin_setting
                                     "search_field_type": "checkbox",
                                     "display_count":0
                                 }
-                            ]
+                            ],
+                            "free_search": {
+                                "meta_keys": [
+                                    "meta_key"
+                                ],
+                                "post_taxonomies": [
+                                    "taxonomy"
+                                ]
+                            },
+                            "field_relation":"OR",
+                            "result_template":""
                         }   
                     }</pre>
-            <ol>
-                <li>
-                    csf_search_filter['unique_filter_name'] = Unique filter name should be post type to query and filter by main wp query.
-                </li>
-                <li>
-                    csf_search_filter['unique_filter_name']['post_type'] = post type to filter
-                </li>
-                <li>
-                    csf_search_filter['unique_filter_name']['posts_per_page'] = post per page in post wq query result page
-                </li>
-                <li>
-                    csf_search_filter['unique_filter_name']['search_filter_title'] = Search filter title in the search form
-                </li>
-                <li>
-                    csf_search_filter['unique_filter_name']['fields'] = Each filter fields values has following options
-                    <ol>
-                        <li>display_name=>'Display name'</li>
-                        <li>filter_term_type => 'taxonomy' or 'metadata'</li>
-                        <li>
-                            filter_term_key => 'taxonomy_key' or 'metadata_key'; [if single meta_key has multiple metavalue in case of repeater metavalue:: example metakey_{array}_metakey]
-                        </li>
-                        <li>
-                            metadata_reference => 'taxonomy,taxonomy_key,slug' or 'post' or 'country_2digit_code' or 'other-as-defined'; only apply to filter_term_key = 'metadata_key' Where 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
-                        </li>
-                        <li>search_field_type => 'dropdown' or 'checkbox' or 'search_text'; default dropdown; there can only be one 'search_text' on each filter</li>
-                        <li>placeholder => 'free text' ;only apply to search_field_type search_text</li>
-                        <li>display_count => 1 or 0; default 1</li>
-                    </ol>
-                </li>
-            </ol>
-        </div>
-        <div id="csf_form_display_help_desc" class="help-info" style="display: none; ">
-            <h4>CSF Form Display Setting</h4>
-            <pre>
+                <ol>
+                    <li>
+                        csf_search_filter['unique_filter_name'] = Unique filter name should be post type to query and filter by main wp query. :: REQUIRED
+                    </li>
+                    <li>
+                        csf_search_filter['unique_filter_name']['post_type'] = post type to filter :: REQUIRED
+                    </li>
+                    <li>
+                        csf_search_filter['unique_filter_name']['posts_per_page'] = post per page in post wq query result page
+                    </li>
+                    <li>
+                        csf_search_filter['unique_filter_name']['search_filter_title'] = Search filter title in the search form
+                    </li>
+                    <li>
+                        csf_search_filter['unique_filter_name']['fields'] = Each filter fields values has following options
+                        <ol>
+                            <li>display_name=>'Display name'</li>
+                            <li>filter_term_type => 'taxonomy' or 'metadata'</li>
+                            <li>
+                                filter_term_key => 'taxonomy_key' or 'metadata_key'; [if single meta_key has multiple metavalue in case of repeater metavalue:: example metakey_{array}_metakey]
+                            </li>
+                            <li>
+                                metadata_reference => 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; only apply to filter_term_key = 'metadata_key' Where ON 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
+                            </li>
+                            <li>search_field_type => 'dropdown' or 'checkbox' or 'search_text'; default dropdown; there can only be one 'search_text' on each filter</li>
+                            <li>placeholder => 'free text' ;only apply to search_field_type search_text</li>
+                            <li>display_count => 1 or 0; default 1</li>
+                        </ol>
+                    </li>
+                    <li>
+                        csf_search_filter['unique_filter_name']['free_search'] = define the meta_key and taxonomy to accept free text search; free_search will only work with field_relation="OR"
+                    </li>
+                    <li>csf_search_filter['unique_filter_name']['field_relation'] = "OR / AND"; default "OR"; OPTIONAL
+                    </li>
+                    <li>csf_search_filter['unique_filter_name']['result_template'] => 'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme;</li>
+
+                </ol>
+            </div>
+            <div id="csf_form_display_help_desc" class="help-info" style="display: none; ">
+                <h4>CSF Form Display Setting</h4>
+                <pre>
     $search_form = [];
     \csf_search_filter\CSF_Form::the_search_filter_form($search_form);
+
+    OR 
+
+    echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" data_url="" ]');
+
                     </pre>
-            <ol>
-                <li> $search_form['filter_name'] = 'unique_filter_name'; default current_post_type</li>
-                <li> $search_form['form_id'] = 'form_id'; default 'csf-filter-form'</li>
-                <li> $search_form['form_class'] = 'form_id'; default 'search-filter-form' </li>
-                <li> $search_form['post_type'] 'post_type'; default current_post_type</li>
-                <li> $search_form['data_url'] = 'data_action_url'; default current_post_archive_url </li>
-            </ol>
+                <ol>
+                    <li> $search_form['filter_name'] = 'unique_filter_name'; default current_post_type</li>
+                    <li> $search_form['form_class'] = 'form_id'; default 'search-filter-form' </li>
+                    <li> $search_form['post_type'] 'post_type'; default current_post_type</li>
+                    <li> $search_form['data_url'] = 'data_action_url'; default current_post_archive_url </li>
+                </ol>
+            </div>
+            <div id="csf_result_display_help_desc" class="help-info" style="display: none; ">
+                <h4>CSF Filter Result Display Setting</h4>
+                <pre>
+        echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" result_show="true"]');  
+        OR  
+        &lt;div id="csf-result-area-filter_name" &gt; -- loop content -- &lt;/div&gt; 
+                </pre>
+                <p>
+                    Use shortcode <br> OR <br>
+                    CSF Search Filter Result area must be wrap by the id = "csf-result-area-filter_name" inorder to display/replace the result by ajax. Here filter_name should be replace.
+                    <br>
+                    For the result template csf query result is stored in variable $csf_query.
+                </p>
+            </div>
         </div>
         <div id="csf_set_search_fields_editor"><?php echo esc_attr(($value) ? $value : ''); ?></div>
     <?php

@@ -3,8 +3,7 @@ jQuery(function ($) {
     /**
      * parameters
      */
-    var csf_filter_form_id = csf_obj.form_id;
-    var csf_result_area_id = csf_obj.result_area_id;
+    var csf_filter_form_ids = JSON.parse(csf_obj.form_ids);
 
     /**
      * =========================================================
@@ -33,8 +32,8 @@ jQuery(function ($) {
      * @param {*} include_script
      * @returns
      */
-    function get_XMLHttpRequest_Data(filtr_result_area_id = '', submission_link = '', callback) {
-        let filtr_result_area = filtr_result_area_id ? '#' + filtr_result_area_id : '#csf-result-area';
+    function get_XMLHttpRequest_Data(filtr_result_area_id, filter_form, submission_link = '', callback) {
+        let filtr_result_area = '#' + filtr_result_area_id;
         submission_link = submission_link ? submission_link : filter_form.attr('data-url') + '/?' + filter_form.serialize();
         var filter_area = $(filtr_result_area);
         filter_area.css('opacity', '0.6');
@@ -77,17 +76,29 @@ jQuery(function ($) {
      * Initialization Search area
      * ============================================
      */
-    var filter_form = $('form#' + csf_filter_form_id);
-    filter_form.on('submit', function (e) {
-        e.stopPropagation();
-        var req = get_XMLHttpRequest_Data(csf_result_area_id);
-        return false;
-    });
-    $('#' + csf_filter_form_id + ' select').on('change', function (e) {
-        filter_form.trigger('submit');
-    });
-    $('#' + csf_filter_form_id + ' input[type="checkbox"]').on('change', function () {
-        filter_form.trigger('submit');
+
+    // var form_id = $('form').attr('id');
+    csf_filter_form_ids.forEach(function (csf_filter_form_id, index) {
+        var filter_form = $('form#' + csf_filter_form_id);
+        var csf_result_area_id = filter_form.attr('result-area-id');
+        filter_form.on('submit', function (e) {
+            e.stopPropagation();
+            var req = get_XMLHttpRequest_Data(csf_result_area_id, filter_form);
+            return false;
+        });
+        $('#' + csf_filter_form_id + ' select').on('change', function (e) {
+            filter_form.trigger('submit');
+        });
+        $('#' + csf_filter_form_id + ' input[type="checkbox"]').on('change', function () {
+            filter_form.trigger('submit');
+        });
+        // $('#' + csf_result_area_id + ' .pagination a').on('click', function (e) {
+        //     this.closest('');
+        //     e.stopPropagation();
+        //     $(window).scrollTop(0);
+        //     get_XMLHttpRequest_Data(csf_result_area_id, $(this).attr('href'));
+        //     return false;
+        // });
     });
 
     /**
@@ -95,19 +106,17 @@ jQuery(function ($) {
      * Pagination filter
      * ============================================
      */
-    // $('.pagination a').on('click', function (e) {
     $(document).on('click', '.pagination a', function (e) {
         e.stopPropagation();
         $(window).scrollTop(0);
-        get_XMLHttpRequest_Data(csf_result_area_id, $(this).attr('href'), function (request) {
-            // if (request.filter_area) {
-            // $('html, body').animate(
-            //   {
-            //     scrollTop: $('#filter-area').offset().top - 250,
-            //   },
-            //   1000
-            // );
-            // }
+        var pagination_link = $(this).attr('href');
+        csf_filter_form_ids.forEach(function (csf_filter_form_id, index) {
+            var filter_form = $('form#' + csf_filter_form_id);
+            var csf_result_area_id = filter_form.attr('result-area-id');
+            var data_url = filter_form.attr('data-url');
+            if (pagination_link.includes(data_url)) {
+                get_XMLHttpRequest_Data(csf_result_area_id, filter_form, pagination_link);
+            }
         });
         return false;
     });

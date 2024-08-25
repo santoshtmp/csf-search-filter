@@ -1,7 +1,6 @@
 /**
  * JS to handle csf admin setting
  */
-
 var csf_fields = ace.edit("csf_set_search_fields_editor"); // div id to convert into editor
 csf_fields.session.setMode("ace/mode/json"); // Set mode for JSON syntax highlighting
 csf_fields.setTheme("ace/theme/monokai");  // Set a theme
@@ -29,8 +28,31 @@ submit_btn.addEventListener('click', function (e) {
         document.getElementById('csf_set_search_fields').value = csf_fields_input;
     }
 
-    // 
+    // csf_cache_fields_input
     const csf_cache_fields_input = csf_cache_fields.getValue();
+    if (document.getElementById('enable_csf_cache_meta').checked) {
+        if (csf_cache_fields_input == '') {
+            e.stopPropagation();
+            e.preventDefault();
+            let csf_cache_metadata_fields_row = document.getElementById('csf_cache_metadata_fields').closest('tr');
+            let required_wrap = document.createElement('span');
+            required_wrap.id = 'required-cache-field';
+            required_wrap.append(document.createElement('br'));
+            let required = document.createElement('span')
+            required.textContent = 'required ';
+            required.style.color = 'red';
+            required.style.fontsize = '10px';
+            required_wrap.append(required);
+            if (document.getElementById('required-cache-field')) {
+                document.getElementById('required-cache-field').remove();
+            }
+            csf_cache_metadata_fields_row.querySelector('th').append(required_wrap);
+        } else {
+            if (document.getElementById('required-cache-field')) {
+                document.getElementById('required-cache-field').remove();
+            }
+        }
+    }
     let csf_cache_fields_input_isValidJSON = false;
     if (csf_cache_fields_input) {
         if (isValidJSON(csf_cache_fields_input)) {
@@ -43,7 +65,27 @@ submit_btn.addEventListener('click', function (e) {
     if (csf_cache_fields_input_isValidJSON || (csf_cache_fields_input == '')) {
         document.getElementById('csf_cache_metadata_fields').value = csf_cache_fields_input;
     }
+});
 
+// handle hide and show fields after base on "Enable CSF cache metadata" 
+let enable_csf_cache_meta = document.getElementById('enable_csf_cache_meta');
+let reset_csf_cache_meta_row = document.getElementById('reset_csf_cache_meta').closest('tr');
+let csf_cache_metadata_fields_row = document.getElementById('csf_cache_metadata_fields').parentElement.parentElement;
+if (enable_csf_cache_meta.checked) {
+    reset_csf_cache_meta_row.style.display = "";;
+    csf_cache_metadata_fields_row.style.display = "";
+} else {
+    reset_csf_cache_meta_row.style.display = "none";;
+    csf_cache_metadata_fields_row.style.display = "none";
+}
+enable_csf_cache_meta.addEventListener('change', function () {
+    if (enable_csf_cache_meta.checked) {
+        reset_csf_cache_meta_row.style.display = "";;
+        csf_cache_metadata_fields_row.style.display = "";
+    } else {
+        reset_csf_cache_meta_row.style.display = "none";;
+        csf_cache_metadata_fields_row.style.display = "none";
+    }
 });
 
 // ceck is json is valid

@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Plugin URI: https://github.com/santoshtmp
+ * Plugin URI: https://github.com/santoshtmp/csf-search-filter
  * Version: 1.0
  * Author: santoshtmp
  * =======================================
@@ -181,28 +181,28 @@ class CSF_Data
     {
         $current_term = $meta_val_parent =  $meta_val_term_id = $meta_val_name = $meta_val_slug = $meta_val;
         $metadata_reference = explode(',', $metadata_reference);
-        if ($metadata_reference[0] == 'taxonomy') {
-            if (intval($meta_val)) {
-                $current_term = get_term($meta_val);
-            } else {
-                if (isset($metadata_reference[1])) {
-                    $current_term = get_term_by('slug', $meta_val, $metadata_reference[1]);
+        if (isset($metadata_reference[0])) {
+            if ($metadata_reference[0] == 'taxonomy') {
+                if (intval($meta_val)) {
+                    $current_term = get_term($meta_val);
+                } else {
+                    if (isset($metadata_reference[1])) {
+                        $current_term = get_term_by('slug', $meta_val, $metadata_reference[1]);
+                    }
                 }
-            }
-            if ($current_term) {
-                $meta_val_name = $current_term->name;
-                $meta_val_slug = $current_term->slug;
-                $meta_val_parent = $current_term->parent;
-                $meta_val_term_id = $current_term->term_id;
-            }
-        }
-        if ($metadata_reference[0] == 'post') {
-            $meta_val_name = get_the_title($meta_val);
-        }
-        if ($metadata_reference[0] == 'country_2digit_code') {
-            if (function_exists('get_plghub_cache')) {
-                $all_unsd_countries = get_plghub_cache('all_unsd_countries');
-                $meta_val_name =  (isset($all_unsd_countries[$meta_val])) ? $all_unsd_countries[$meta_val] : $meta_val_name;
+                if ($current_term) {
+                    $meta_val_name = $current_term->name;
+                    $meta_val_slug = $current_term->slug;
+                    $meta_val_parent = $current_term->parent;
+                    $meta_val_term_id = $current_term->term_id;
+                }
+            } else if ($metadata_reference[0] == 'post') {
+                $meta_val_name = get_the_title($meta_val);
+            } else {
+                if (function_exists($metadata_reference[0])) {
+                    $data = $metadata_reference[0]();
+                    $meta_val_name =  (isset($data[$meta_val])) ? $data[$meta_val] : $meta_val_name;
+                }
             }
         }
         return [
@@ -300,11 +300,12 @@ class CSF_Data
         // Run the query
         if ($find_table_name == $table_name) {
             // SQL query to drop the table
+            // $wpdb->prepare(
+            //     "DROP TABLE IF EXISTS %s",
+            //     $table_name
+            // )
             $results = $wpdb->query(
-                $wpdb->prepare(
-                    "DROP TABLE IF EXISTS %s",
-                    $table_name
-                )
+                "DROP TABLE IF EXISTS $table_name"
             );
         }
 

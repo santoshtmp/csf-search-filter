@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Plugin URI: https://github.com/santoshtmp
+ * Plugin URI: https://github.com/santoshtmp/csf-search-filter
  * Version: 1.0
  * Author: santoshtmp
  * =======================================
@@ -34,7 +34,7 @@ class CSF_Query
 
     public function __construct()
     {
-        add_action('pre_get_posts', [$this, 'csf_search_filter_query'], 11);
+        add_action('pre_get_posts', [$this, 'csf_search_filter_query'], 101);
         add_filter('posts_where', [$this, 'where_post_case'], 10, 2);
         add_filter('posts_join', [$this, 'join_post_case']);
         add_filter('posts_groupby', [$this, 'groupby_post_case']);
@@ -71,8 +71,12 @@ class CSF_Query
      * 
      * https://www.lab21.gr/blog/extend-the-where-clause-in-wordpress-wp_query/ 
      */
-    public function csf_query($fields_settings, $query, $return_query = false)
+    public function csf_query($fields_settings, $query, $set_post_type = false)
     {
+        // Verify _csf_nonce
+        // if (!isset($_GET['_csf_nonce']) || !wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
+        //     return '';
+        // }
 
         // post per page 
         $posts_per_page = (isset($fields_settings['posts_per_page'])) ? $fields_settings['posts_per_page'] : 12;
@@ -80,14 +84,16 @@ class CSF_Query
             $query->set('posts_per_page', $posts_per_page);
         }
 
-        // Verify _csf_nonce
-        if (!isset($_GET['_csf_nonce']) || !wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
-            return '';
-        }
-        
-        // search fields
+        // 
         $post_type = (isset($fields_settings['post_type'])) ? $fields_settings['post_type'] : 'page';
-        $fields = $fields_settings['fields'];
+        if ($set_post_type) {
+            $query->set('post_type', $post_type);
+        }
+
+        // 
+        $field_relation = (isset($fields_settings['field_relation'])) ? $fields_settings['field_relation'] : 'OR';
+        // search fields
+        $fields = isset($fields_settings['fields']) ? $fields_settings['fields'] : [];
         $tax_query =  [];
         $meta_query = [];
         foreach ($fields as $key =>  $field) {
@@ -99,7 +105,7 @@ class CSF_Query
                     $custom_search_post['search'] = $_GET_search_text;
                     // other free_search
                     $free_search = (isset($fields_settings['free_search'])) ? $fields_settings['free_search'] : false;
-                    if ($free_search) {
+                    if ($free_search && ($field_relation == "OR")) {
                         // Also perform free text search in below defined tax key
                         if ($_GET_search_text) {
                             $post_taxonomies = $fields_settings['free_search']['post_taxonomies'];
@@ -233,11 +239,10 @@ class CSF_Query
 
         $custom_search_post['tax_query'] = $tax_query;
         $custom_search_post['meta_query'] = $meta_query;
+        $custom_search_post['relation'] =  $field_relation;
         // set custom_search_post
         $query->set('csf_posts', $custom_search_post);
-        if ($return_query) {
-            return $query;
-        }
+
         return;
     }
 
@@ -268,6 +273,7 @@ class CSF_Query
     // add_filter('posts_where', 'where_post_case', 10, 2);
     function where_post_case($where, $wp_query)
     {
+        // global $wp_query; // var_dump($wp_query->request);
         global $wpdb;
         if ($custom_search_post = $wp_query->get('csf_posts')) {
             $custom_where = [];
@@ -276,7 +282,7 @@ class CSF_Query
             $meta_query = (isset($custom_search_post['meta_query'])) ? $custom_search_post['meta_query'] : '';
             $tax_query = (isset($custom_search_post['tax_query'])) ? $custom_search_post['tax_query'] : '';
             if ($search) {
-                $custom_where[] =  $wpdb->posts . '.post_title LIKE \'%' . $wpdb->esc_like($search) . '%\' ';
+                $custom_where[] =  ' ( ' . $wpdb->posts . '.post_title LIKE \'%' . $wpdb->esc_like($search) . '%\' OR ' . $wpdb->posts . '.post_excerpt LIKE \'%' . $wpdb->esc_like($search) . '%\' OR ' . $wpdb->posts . '.post_content LIKE \'%' . $wpdb->esc_like($search) . '%\' ) ';
             }
             if ($meta_query && is_array($meta_query)) {
                 foreach ($meta_query as $key => $query) {
@@ -399,4 +405,37 @@ class CSF_Query
     }
 
     // SF_Query class end
+}
+
+class CSF_Args
+{
+    // Property to hold an array of data
+    private $args = array();
+
+    // Method to set a value in the array
+    public function set($key, $value)
+    {
+        $this->args[$key] = $value;
+    }
+
+    // Method to get a value from the array
+    public function get($key)
+    {
+        // Check if the key exists in the array
+        if (isset($this->args[$key])) {
+            return $this->args[$key];
+        } else {
+            return null; // Return null if key does not exist
+        }
+    }
+    public function getAll()
+    {
+        return $this->args;
+    }
+
+    // Method to check if a key exists
+    public function has($key)
+    {
+        return isset($this->args[$key]);
+    }
 }

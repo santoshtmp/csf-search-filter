@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Plugin URI: https://github.com/santoshtmp
+ * Plugin URI: https://github.com/santoshtmp/csf-search-filter
  * Version: 1.0
  * Author: santoshtmp
  * =======================================
@@ -21,11 +21,10 @@ if (!defined('ABSPATH')) {
  */
 class CSF_Form
 {
-
+    public static $form_ids = [];
     /**
      * search filter form output
      * @param array $search_form[]
-     *              $search_form['form_id'] = "csf-filter-form" ;
      *              $search_form['form_class'] = "search-filter-form";
      *              $search_form['post_type'] = 'post_type';
      *              $search_form['data_url'] = 'action_url ;
@@ -33,11 +32,20 @@ class CSF_Form
      */
     public static function the_search_filter_form($search_form = [])
     {
-        $form_id = (isset($search_form['form_id'])) ? $search_form['form_id'] : "csf-filter-form";
         $form_class = (isset($search_form['form_class'])) ? $search_form['form_class'] : "search-filter-form";
-        $post_type =  (isset($search_form['post_type'])) ? $search_form['post_type'] : get_post_type();
+        $post_type =  (isset($search_form['post_type'])) ? $search_form['post_type'] : '';
         $data_url = (isset($search_form['data_url'])) ? $search_form['data_url'] : home_url($post_type);
-        $filter_name = (isset($search_form['filter_name'])) ? $search_form['filter_name'] : $post_type;
+        $data_url = ($data_url) ? $data_url : home_url($post_type);
+        $filter_name = (isset($search_form['filter_name'])) ? $search_form['filter_name'] : '';
+        if (!$filter_name) {
+            echo "filter name is required";
+            return;
+        }
+        if (!$post_type) {
+            echo "post type is required";
+            return;
+        }
+
         $search_fields = \csf_search_filter\CSF_Fields::set_search_fields();
         $fields_settings = (isset($search_fields[$filter_name])) ? $search_fields[$filter_name] : '';
         if (! $fields_settings) {
@@ -45,15 +53,18 @@ class CSF_Form
             return;
         }
         $search_filter_title = (isset($fields_settings['search_filter_title'])) ? $fields_settings['search_filter_title'] : 'Filters';
-        \csf_search_filter\CSF_Enqueue::csf_search_js($form_id, 'csf-result-area'); ?>
+        $form_id = 'csf-filter-form-' . str_replace([' '], '-', strtolower($filter_name));
+        $result_area_id = "csf-result-area-" . str_replace([' '], '-', strtolower($filter_name));
+        self::$form_ids[] = $form_id;
+        \csf_search_filter\CSF_Enqueue::csf_search_js(self::$form_ids); ?>
         <div class="search-form-wrapper">
             <h2 class='search-filter-title font-semibold text-sm m-4 mt-0'>
                 <?php echo esc_attr($search_filter_title); ?>
             </h2>
-            <form id="<?php echo esc_attr($form_id); ?>" action="" method="GET" class='<?php echo esc_attr($form_class); ?>' data-url=<?php echo esc_attr($data_url); ?> role="search">
+            <form id="<?php echo esc_attr($form_id); ?>" action="" method="GET" class='<?php echo esc_attr($form_class); ?>' data-url=<?php echo esc_attr($data_url); ?> role="search" result-area-id="<?php echo esc_attr($result_area_id) ?>">
                 <?php
                 // setup csf_nonce
-                wp_nonce_field('csf_nonce', '_csf_nonce', true, true);
+                // wp_nonce_field('csf_nonce', '_csf_nonce', true, true);
                 // check and display each search filter field
                 $fields = $fields_settings['fields'];
                 foreach ($fields as $key => $field) {
@@ -120,10 +131,9 @@ class CSF_Form
     // form free search text area
     public static function search_text_field($field)
     {
-        $search = '';
-        if (isset($_GET['_csf_nonce']) && wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
-            $search = isset($_GET['search']) ? $_GET['search'] : '';
-        } ?>
+        $search = isset($_GET['search']) ? $_GET['search'] : '';
+
+    ?>
         <div class="filter-block search-box" filter-action="free-search">
             <span class='search-icon'>
                 <?php
@@ -140,10 +150,7 @@ class CSF_Form
     // form dropdown_field fild
     public static function dropdown_field($filter_title, $name, $filter_items, $show_count = 0)
     {
-        $select_dropdown = '';
-        if (isset($_GET['_csf_nonce']) && wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
-            $select_dropdown = isset($_GET[$name]) ? $_GET[$name] : '';
-        }
+        $select_dropdown = isset($_GET[$name]) ? $_GET[$name] : '';
         wp_enqueue_style('select2');
         wp_enqueue_script('select2'); ?>
         <div class="filter-block sort-wrapper <?php echo ($select_dropdown) ? 'active' : ''; ?>">
@@ -184,11 +191,8 @@ class CSF_Form
     // form checkbox_field field
     public static function checkbox_field($filter_title, $field_name, $filter_items, $show_count = 0)
     {
-        $active_filter = $select_checkbox = '';
-        if (isset($_GET['_csf_nonce']) && wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
-            $active_filter = isset($_GET['active_filter']) ? $_GET['active_filter'] : '';
-            $select_checkbox = isset($_GET[$field_name]) ? $_GET[$field_name] : [];
-        }
+        $active_filter = isset($_GET['active_filter']) ? $_GET['active_filter'] : '';
+        $select_checkbox = isset($_GET[$field_name]) ? $_GET[$field_name] : [];
         $active_filter = ($active_filter == $field_name) ? 'active' : '';
         $filter_active_class = ($select_checkbox) ? 'active' : $active_filter; ?>
         <div class="filter-block accordion <?php echo esc_attr($filter_active_class); ?>">

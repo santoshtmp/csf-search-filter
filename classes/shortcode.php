@@ -5,7 +5,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Plugin URI: https://github.com/santoshtmp
+ * Plugin URI: https://github.com/santoshtmp/csf-search-filter
  * Version: 1.0
  * Author: santoshtmp
  * =======================================
@@ -13,6 +13,8 @@
 
 namespace csf_search_filter;
 
+use stdClass;
+use WP_Query;
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
@@ -31,34 +33,41 @@ class CSF_shortcode
         // Define default attributes
         $atts = shortcode_atts(
             array(
-                'id' => 0,
+                'filter_name' => "",
+                'form_id' => "",
+                'form_class' => "",
+                'post_type' => "",
+                'data_url' => "",
                 'result_show' => "false",
             ),
             $atts
         );
-        $search_filter_id = (int)$atts['id'];
+        $filter_name = $atts['filter_name'];
+        $form_id = $atts['form_id'];
+        $form_class = $atts['form_class'];
+        $post_type = $atts['post_type'];
+        $data_url = $atts['data_url'];
         $result_show = $atts['result_show'];
-        if (!$search_filter_id) {
-            return "csf_searchfilter id is required";
+        $search_form = [
+            "filter_name" => $filter_name,
+            'form_id' => $form_id,
+            'form_class' => $form_class,
+            'post_type' => $post_type,
+            'data_url' => $data_url,
+        ];
+        // 
+        if (!$filter_name) {
+            return "csf_searchfilter filter_name is required";
         }
-        if (!get_post($search_filter_id)) {
-            return "csf_searchfilter id is invalid";
-        }
-
-        $settings = [];
-        $result_area_id = '';
+        // 
         if ($result_show === 'true') {
-            $this->display_shortcode_csf_searchfilter_result($result_area_id, $settings);
+            $search_fields = \csf_search_filter\CSF_Fields::set_search_fields();
+            $fields_settings = (isset($search_fields[$filter_name])) ? $search_fields[$filter_name] : '';
+            $this->display_shortcode_csf_searchfilter_result($filter_name, $fields_settings);
             return '';
         }
-
-        // Generate the form shortcode output
         ob_start();
-?>
-        <div class="form">
-            loading under development
-        </div>
-<?php
+        \csf_search_filter\CSF_Form::the_search_filter_form($search_form);
         $output = ob_get_contents();
         ob_end_clean();
         return $output;
@@ -67,13 +76,26 @@ class CSF_shortcode
 
 
     // 
-    public function display_shortcode_csf_searchfilter_result($result_area_id, $settings)
+    public function display_shortcode_csf_searchfilter_result($filter_name, $fields_settings)
     {
-        $template_path = isset($settings['search_filter_result_template']) ? $settings['search_filter_result_template'] : '';
-        if (empty($template_path) || $template_path == '') {
-            $template_path = csf_dir . 'includes/csf-result-template.php';
+        $result_area_id = "csf-result-area-" . str_replace([' '], '-', strtolower($filter_name));
+        if ($filter_name == get_post_type()) {
+            global $wp_query;
+            if (! isset($wp_query)) {
+                return false;
+            }
+            $csf_query = $wp_query;
         } else {
-            $template_path = get_template_directory() . '/' . $template_path;
+            $csf_query = new \csf_search_filter\CSF_Query();
+            $query_args = new CSF_Args();
+            $csf_query->csf_query($fields_settings, $query_args, true);            
+            $csf_query = new WP_Query($query_args->getAll());
+        }
+        $template_path = isset($fields_settings['result_template']) ? $fields_settings['result_template'] : '';
+        if (empty($template_path) || $template_path == '') {
+            $template_path = csf_dir . 'includes/csf-result-loop-template.php';
+        } else {
+            $template_path = get_stylesheet_directory() . '/' . $template_path;
         }
         if ($template_path) {
             $template_path = ltrim($template_path, '/');
@@ -82,14 +104,13 @@ class CSF_shortcode
             if (file_exists($template_path)) {
                 include $template_path;
             } else {
-                $load_template = get_template_part($template_path);
-                if ($load_template === false) {
-                    echo "invalid search filter result template.";
-                }
+                // $load_template = get_template_part($template_path);
+                echo "invalid search filter result template.";
             }
             echo "</div> ";
             echo "</div> ";
         }
+        wp_reset_postdata();
     }
 
     // class end

@@ -20,7 +20,7 @@ To make search filter form and query easy.
 CSF - Search Filter library plugin purpose to make search filter easier for admin and developer by providing form and query it.
 
 == Screenshots ==
-1. csf-admin-setting.png
+1. csf-admin-setting-page.png
 
 == Installation ==
 1. Upload the plugin files to the `/wp-content/plugins/csf-search-filter` directory, or install the plugin through the WordPress plugins screen directly.

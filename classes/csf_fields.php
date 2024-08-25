@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Plugin URI: https://github.com/santoshtmp
+ * Plugin URI: https://github.com/santoshtmp/csf-search-filter
  * Version: 1.0
  * Author: santoshtmp
  * =======================================
@@ -49,7 +49,7 @@ class CSF_Fields
      * display_name=>'Display name'
      * filter_term_type => 'taxonomy' or 'metadata'
      * filter_term_key => 'taxonomy_key' or 'metadata_key'; [if single meta_key has multiple metavalue in case of repeater metavalue:: example metakey_{array}_metakey]
-     * metadata_reference => 'taxonomy,taxonomy_key,slug' or 'post' or 'other-as-defined'; only apply to filter_term_key metadata_key Where 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
+     * metadata_reference => 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; only apply to filter_term_key metadata_key Where 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
      * search_field_type => 'dropdown' or 'checkbox' or 'search_text'; there can only be one 'search_text' on each filter
      * placeholder => 'free text' ;only apply to search_field_type search_text
      * display_count => 1 or 0; default 1
@@ -73,7 +73,7 @@ class CSF_Fields
             ['display_name' => '', 'search_field_type' => 'search_text', 'placeholder' => 'Search with title or keywords.'],
             ['display_name' => 'Sector', 'filter_term_type' => 'taxonomy', 'filter_term_key' => 'resource-sector', 'search_field_type' => 'checkbox',],
             ['display_name' => 'Commodity Type', 'filter_term_type' => 'taxonomy', 'filter_term_key' => 'commodity-type', 'search_field_type' => 'checkbox',],
-            ['display_name' => 'Country', 'filter_term_type' => 'metadata', 'filter_term_key' => 'country_only', 'metadata_reference' => 'country_2digit_code', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Country', 'filter_term_type' => 'metadata', 'filter_term_key' => 'country_only', 'metadata_reference' => 'get_plghub_cache_all_unsd_countries', 'search_field_type' => 'checkbox'],
             ['display_name' => 'Region', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_only', 'metadata_reference' => 'taxonomy,png-region,slug', 'search_field_type' => 'checkbox'],
             ['display_name' => 'Province', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_province_only', 'metadata_reference' => 'taxonomy,png-region,slug', 'search_field_type' => 'checkbox'],
             ['display_name' => 'Topic', 'filter_term_type' => 'metadata', 'metadata_reference' => 'taxonomy,topic', 'filter_term_key' => 'topic_sub_topic_list_{array}_topic_only', 'search_field_type' => 'checkbox'],
@@ -87,7 +87,8 @@ class CSF_Fields
         ];
         $resource_filter['free_search']['meta_keys'] = ['description', 'publication_year_only'];
         $resource_filter['free_search']['post_taxonomies'] = ['keywords-tag', 'resource-type', 'commodity-type', 'resource-sector', 'format'];
-
+        $resource_filter['field_relation'] = "OR";
+        $resource_filter['result_template'] = "";
         // For project post type search filter
         $project_filter = [];
         $project_filter_name = 'project'; //filter name should be post type to query and filter by main wp query 
@@ -146,7 +147,7 @@ class CSF_Fields
         $fields[$resource_post_type] = [
             [
                 'filter_meta_key' => 'country_only',
-                'metadata_reference' => 'country_2digit_code',
+                'metadata_reference' => 'get_plghub_cache_all_unsd_countries',
                 'form_field_name' => 'acf.field_669642be967c2'
             ],
             [
