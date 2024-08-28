@@ -18,6 +18,34 @@ if (!defined('ABSPATH')) {
 
 class CSF_Enqueue
 {
+
+    public function __construct()
+    {
+        add_action('init', [$this, 'register_scripts']);
+    }
+    /**
+     * ===================================================
+     * register_scripts
+     * ===================================================
+     */
+    function register_scripts()
+    {
+        // select2 js
+        wp_register_style(
+            'select2',
+            'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
+            array(),
+            '1.0'
+        );
+        wp_register_script(
+            'select2',
+            'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
+            array('jquery'),
+            '1.0',
+            true
+        );
+    }
+
     // 
     public static function csf_search_js($form_id = ['csf-filter-form'])
     {
@@ -37,6 +65,7 @@ class CSF_Enqueue
         ]);
     }
 
+    // 
     public static function csf_admin_setting_js()
     {
         // ace-editor
@@ -81,6 +110,9 @@ class CSF_Enqueue
             'default_cache_metadata_fields' => ($default_cache_metadata_fields) ? wp_json_encode($default_cache_metadata_fields) : '',
         ));
     }
+
+
+    // add_action('init', 'register_scripts');
 
     // public function admin_csf_search_filter_scripts()
     // {

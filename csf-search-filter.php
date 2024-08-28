@@ -35,7 +35,28 @@ if (!defined('csf_dir')) {
 }
 
 // require csf classes
-require_once csf_dir . 'classes/_include.php';
+require_once csf_dir . 'classes/csf_admin_setting.php';
+require_once csf_dir . 'classes/csf_data.php';
+require_once csf_dir . 'classes/csf_fields.php';
+require_once csf_dir . 'classes/csf_form.php';
+require_once csf_dir . 'classes/csf_query.php';
+require_once csf_dir . 'classes/enqueue_script.php';
+require_once csf_dir . 'classes/shortcode.php';
+// csf main class
+class CSF
+{
+    public function __construct()
+    {
+        // execute the csf .
+        $search_filter_query = new \csf_search_filter\CSF_Query();
+        $csf_table = new \csf_search_filter\CSF_Admin_setting();
+        $csf_table = new \csf_search_filter\CSF_Data();
+        $csf_shortcode = new \csf_search_filter\CSF_shortcode();
+        $csf_enqueue = new \csf_search_filter\CSF_Enqueue();
+    }
+}
+$csf = new CSF();
+
 
 
 // Hook into the plugin action links filter

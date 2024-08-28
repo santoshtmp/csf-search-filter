@@ -33,7 +33,7 @@ class CSF_Data
 
     /**
      * @param string $post_type
-     * @param string $meta_key
+     * @param string $meta_key => filter_term_key
      * @return array 
      */
     public static function get_csf_metadata($post_type, $meta_key, $metadata_reference = '')
@@ -44,14 +44,12 @@ class CSF_Data
         if ($emable_csf_cache_meta) {
             $table_name = $wpdb->prefix . 'csf_cache_metadata';
             $cache_metadata = [];
-            $results = $wpdb->get_results(
-                $wpdb->prepare(
-                    "SELECT * FROM %s WHERE post_type = %s AND filter_meta_key = %s",
-                    $table_name,
-                    $post_type,
-                    $meta_key
-                )
+            $sql_prepare = $wpdb->prepare(
+                "SELECT * FROM $table_name WHERE post_type = %s AND filter_meta_key = %s",
+                $post_type,
+                $meta_key
             );
+            $results = $wpdb->get_results($sql_prepare);
         }
         if ($results) {
             foreach ($results as $key => $result) {
@@ -78,13 +76,48 @@ class CSF_Data
         return $cache_metadata;
     }
 
+    /**
+     * @param string $post_type
+     * @param string  $meta_key => filter_term_key
+     * @return array 
+     */
+    public static function get_meta_value_count($post_type, $meta_key, $meta_value, $metadata_reference)
+    {
+        global $wpdb;
+        $results = '';
+        $emable_csf_cache_meta = (get_option('emable_csf_cache_meta')) ?: '';
+        if ($emable_csf_cache_meta) {
+            $table_name = $wpdb->prefix . 'csf_cache_metadata';
+            $results = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE post_type = %s AND filter_meta_key = %s AND meta_value = %s",
+                    $post_type,
+                    $meta_key,
+                    $meta_value
+                )
+            );
+        }
+        if ($results) {
+            return $results->count;
+        } else {
+            $meta = self::get_csf_meta_info($post_type, $meta_key, $metadata_reference, $meta_value);
+            if ($meta) {
+                foreach ($meta as $key => $value) {
+                    if ($value['value'] == $meta_value) {
+                        return $value['count'];
+                    }
+                }
+            }
+        }
+        return 0;
+    }
 
     /**
      * @param string $post_type
-     * @param string $meta_key
+     * @param string  $meta_key => filter_term_key
      * @return array 
      */
-    public static function get_csf_meta_info($post_type, $meta_key, $metadata_reference = '')
+    public static function get_csf_meta_info($post_type, $meta_key, $metadata_reference = '', $meta_value_check = '')
     {
         if (!$post_type || !$meta_key) {
             return;
@@ -98,14 +131,14 @@ class CSF_Data
         // get all post from given post type and retrive given meta-key values
         $posts = get_posts($post_args);
         foreach ($posts as $key => $post) {
-            $meta_info = self::check_post_meta_info($post->ID,  $meta_key, $metadata_reference, $meta_info);
+            $meta_info = self::check_post_meta_info($post->ID,  $meta_key, $metadata_reference, $meta_info, false, $meta_value_check);
         }
         asort($meta_info);
         return $meta_info;
     }
 
     // 
-    public static function check_post_meta_info($post_id, $meta_key, $metadata_reference, $meta_info = [], $return_field_term_id = false)
+    public static function check_post_meta_info($post_id, $meta_key, $metadata_reference, $meta_info = [], $return_field_term_id = false, $meta_value_check = '')
     {
         if (!$post_id || !$meta_key) {
             return;
@@ -116,12 +149,23 @@ class CSF_Data
             $meta_key_new = str_replace('{array}', $index, $meta_key);
             $meta_value = get_post_meta($post_id, $meta_key_new, true);
             if ($meta_value) {
-                if (is_array($meta_value)) {
-                    foreach ($meta_value as $key => $meta_val) {
-                        $meta_info = self::check_add_meta_info($meta_info, $meta_val, $metadata_reference, $return_field_term_id);
+                if ($meta_value_check && $meta_value_check == $meta_value) {
+                    var_dump($meta_value);
+                    if (is_array($meta_value)) {
+                        foreach ($meta_value as $key => $meta_val) {
+                            $meta_info = self::check_add_meta_info($meta_info, $meta_val, $metadata_reference, $return_field_term_id);
+                        }
+                    } else {
+                        $meta_info = self::check_add_meta_info($meta_info, $meta_value, $metadata_reference, $return_field_term_id);
                     }
                 } else {
-                    $meta_info = self::check_add_meta_info($meta_info, $meta_value, $metadata_reference, $return_field_term_id);
+                    if (is_array($meta_value)) {
+                        foreach ($meta_value as $key => $meta_val) {
+                            $meta_info = self::check_add_meta_info($meta_info, $meta_val, $metadata_reference, $return_field_term_id);
+                        }
+                    } else {
+                        $meta_info = self::check_add_meta_info($meta_info, $meta_value, $metadata_reference, $return_field_term_id);
+                    }
                 }
             }
             $index = $index + 1;
@@ -352,8 +396,7 @@ class CSF_Data
         $table_data_format = ['%s', '%s', '%s', '%d', '%s', '%d'];
         $results = $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT * FROM %s WHERE post_type = %s AND filter_meta_key = %s AND meta_value = %s",
-                $table_name,
+                "SELECT * FROM $table_name WHERE post_type = %s AND filter_meta_key = %s AND meta_value = %s",
                 $post_type,
                 $filter_meta_key,
                 $meta_value
@@ -434,13 +477,14 @@ class CSF_Data
             return;
         }
 
-        // Verify the default _wpnonce (WordPress automatically generates this for saving posts)
-        if (! isset($_POST['_wpnonce']) || ! check_admin_referer('update-post_' . $post_id)) {
-            return;
-        }
-
         // 
         if ($post_id) {
+
+            // // Verify the default _wpnonce (WordPress automatically generates this for saving posts)
+            // if (! isset($_POST['_wpnonce']) || ! check_admin_referer('update-post_' . $post_id)) {
+            //     return;
+            // }
+
             $fields = \csf_search_filter\CSF_Fields::set_csf_cache_metadata_fields();
             if ($fields) {
                 $current_post_type = get_post_type($post_id);

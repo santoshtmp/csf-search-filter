@@ -37,7 +37,8 @@ jQuery(function ($) {
         submission_link = submission_link ? submission_link : filter_form.attr('data-url') + '/?' + filter_form.serialize();
         var filter_area = $(filtr_result_area);
         filter_area.css('opacity', '0.6');
-        filter_area.addClass('csf-area-loading');
+        let loading_class = "filter-area-loading";
+        filter_area.addClass(loading_class);
         var failed_data = "<p class='csf-failed-to-load'>Fail on loading data try again.</p>";
         var request = make_XMLHttpRequest();
         request.open('GET', submission_link, true);
@@ -65,7 +66,7 @@ jQuery(function ($) {
                     filter_area.html(failed_data);
                 }
                 filter_area.css('opacity', '1');
-                filter_area.removeClass('csf-area-loading');
+                filter_area.removeClass(loading_class);
                 if (callback) callback(request);
             }
         };
@@ -73,7 +74,7 @@ jQuery(function ($) {
 
     /**
      * ============================================
-     * Initialization Search area
+     * Initialization for all given search ids
      * ============================================
      */
 
@@ -92,13 +93,15 @@ jQuery(function ($) {
         $('#' + csf_filter_form_id + ' input[type="checkbox"]').on('change', function () {
             filter_form.trigger('submit');
         });
-        // $('#' + csf_result_area_id + ' .pagination a').on('click', function (e) {
-        //     this.closest('');
-        //     e.stopPropagation();
-        //     $(window).scrollTop(0);
-        //     get_XMLHttpRequest_Data(csf_result_area_id, $(this).attr('href'));
-        //     return false;
-        // });
+
+        /**
+         * ============================================
+         * Apply select 2 search in all select field for form
+         * ============================================
+         */
+        $('form#' + csf_filter_form_id + ' select').each(function () {
+            $(this).select2();
+        });
     });
 
     /**
@@ -120,6 +123,14 @@ jQuery(function ($) {
         });
         return false;
     });
+
+    // move the section view to the active filter block
+    let filter_block_active = document.querySelector('form .filter-block.active');
+    if (filter_block_active) {
+        filter_block_active.scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
 
 
     /**

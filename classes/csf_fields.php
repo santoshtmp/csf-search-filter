@@ -113,6 +113,7 @@ class CSF_Fields
         $map_block_filter['fields']  = [
             ['display_name' => 'Sector', 'filter_term_type' => 'metadata', 'metadata_reference' => 'taxonomy,resource-sector', 'filter_term_key' => 'sector', 'search_field_type' => 'dropdown'],
             ['display_name' => 'Commodity Type', 'filter_term_type' => 'metadata', 'metadata_reference' => 'taxonomy,commodity-type', 'filter_term_key' => 'commodity_type', 'search_field_type' => 'dropdown'],
+            ['display_name' => 'Resource type', 'filter_term_type' => 'metadata', 'metadata_reference' => 'taxonomy,resource-type', 'filter_term_key' => 'resource_type', 'search_field_type' => 'dropdown'],
             ['display_name' => 'Status', 'filter_term_type' => 'taxonomy', 'filter_term_key' => 'project-status'],
             ['display_name' => 'Region', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_province_png_region_only', 'metadata_reference' => 'taxonomy,png-region', 'search_field_type' => 'dropdown'],
             ['display_name' => 'Province', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_province_png_region_province_only', 'metadata_reference' => 'taxonomy,png-region', 'search_field_type' => 'dropdown'],
@@ -193,6 +194,11 @@ class CSF_Fields
                 'filter_meta_key' => 'commodity_type',
                 'metadata_reference' => 'taxonomy,commodity-type',
                 'form_field_name' => 'acf.field_66b5c4bb15749'
+            ],
+            [
+                'filter_meta_key' => 'resource_type',
+                'metadata_reference' => 'taxonomy,resource-type',
+                'form_field_name' => 'acf.field_66cc61d339613'
             ],
             [
                 'filter_meta_key' => 'region_province_png_region_only',
