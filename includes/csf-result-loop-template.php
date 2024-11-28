@@ -17,7 +17,7 @@ if (get_query_var('paged')) {
 } else {
     $paged = 1;
 }
-//  echo do_shortcode('[csf_searchfilter filter_name="map_filter" post_type="project" data_url="http://png-hub.local/resource/" ]');
+//  echo do_shortcode('[csf_searchfilter filter_name="map_filter" post_type="project" data_url="http://site_domain_name.local/resource/" ]');
 //  echo do_shortcode('[csf_searchfilter filter_name="map_filter" result_show="true"]');
 
 if ($csf_query->have_posts()) {

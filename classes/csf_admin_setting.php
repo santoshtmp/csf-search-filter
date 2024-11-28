@@ -112,7 +112,9 @@ class CSF_Admin_setting
     public function csf_set_search_fields_callback()
     {
         $value = (get_option('csf_set_search_fields')) ?: '';
-        $close_icon = '/wp-content/themes/png-hub/csf-search-filter/assets/icon/close.svg';
+        $close_icon = csf_dir . 'assets/icon/close.svg';
+        $close_icon_url = str_replace(rtrim(ABSPATH, '/'), home_url(), $close_icon);
+
     ?>
         <textarea id="csf_set_search_fields" name="csf_set_search_fields" style="display: none;"><?php echo esc_attr($value); ?></textarea>
         <div class="info" style="margin-bottom: 7px;">
@@ -120,15 +122,15 @@ class CSF_Admin_setting
             <button type="button" class="btn btn-primary" data-action="csf_set_search_fields_default"> Set Default Value</button>
             <button type="button" class="help_btn" help-info-id="csf_search_fields_help_desc">
                 Set Search Field Help
-                <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
+                <img src="<?php echo esc_attr($close_icon_url); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
             <button type="button" class="help_btn" help-info-id="csf_form_display_help_desc">
                 Form Display Help
-                <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
+                <img src="<?php echo esc_attr($close_icon_url); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
             <button type="button" class="help_btn" help-info-id="csf_result_display_help_desc">
                 CSF Result Display Help
-                <img src="<?php echo esc_attr($close_icon); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
+                <img src="<?php echo esc_attr($close_icon_url); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
         </div>
         <div style="margin-bottom: 7px;">
