@@ -49,7 +49,7 @@ class CSF_Fields
         $resource_filter_name = 'resource'; //filter name should be post type to query and filter by main wp query 
         $resource_filter['post_type']  = $resource_filter_name; // post type to filter
         // $resource_filter['taxonomies']  = 'resource-rights'; // seperate the multiple taxonomy by (,) comma
-        $resource_filter['is_main_query'] = true; // if elastic search is enable this will be override for "project" and "resource" post type .
+        $resource_filter['is_main_query'] = true; // It may overried my others plugin or functions
         $resource_filter['posts_per_page'] = 24; // post per page in post wq query result page
         $resource_filter['search_filter_title'] = 'Filters'; // Search filter title in the search form
         $resource_filter['fields']  = [
@@ -58,7 +58,7 @@ class CSF_Fields
             ['display_name' => 'Commodity', 'filter_term_type' => 'metadata', 'filter_term_key' => 'commodity_type', 'metadata_reference' => 'taxonomy,commodity-type', 'search_field_type' => 'checkbox',],
             ['display_name' => 'Country', 'filter_term_type' => 'metadata', 'filter_term_key' => 'country_only', 'metadata_reference' => 'get_plghub_cache_all_unsd_countries', 'search_field_type' => 'checkbox'],
             // ['display_name' => 'Region', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_only', 'metadata_reference' => 'taxonomy,png-region,slug', 'search_field_type' => 'checkbox'],
-            //  search in both or more then one metadata is possible only in elastic search; not in wp query.
+            //  search in both or more then one metadata is possible only in extera function search is developed; not in wp query.
             ['display_name' => 'Region', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_only|region_unsd_region_only', 'metadata_reference' => 'taxonomy,png-region,slug|get_plghub_cache_all_unsd_region', 'search_field_type' => 'checkbox'],
             ['display_name' => 'Province', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_province_only', 'metadata_reference' => 'taxonomy,png-region,slug', 'search_field_type' => 'checkbox'],
             ['display_name' => 'Topic', 'filter_term_type' => 'metadata', 'metadata_reference' => 'taxonomy,topic', 'filter_term_key' => 'topic_sub_topic_list_{array}_topic_only', 'search_field_type' => 'checkbox'],

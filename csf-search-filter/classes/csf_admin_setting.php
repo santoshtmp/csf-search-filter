@@ -175,7 +175,7 @@ class CSF_Admin_setting
                         csf_search_filter['unique_filter_name'] = Unique filter name. :: REQUIRED
                     </li>
                     <li>
-                        csf_search_filter['unique_filter_name']['is_main_query'] = true or false, this is to make the wp main query in archive or taxonomy page. This may be overried if elastic or other search is enable
+                        csf_search_filter['unique_filter_name']['is_main_query'] = true or false, this is to make the wp main query in archive or taxonomy page. This may be overried if other search is enable
                     </li>
                     <li>
                         csf_search_filter['unique_filter_name']['post_type'] = post type to filter :: REQUIRED

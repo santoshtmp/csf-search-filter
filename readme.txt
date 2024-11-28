@@ -24,8 +24,9 @@ CSF - Search Filter library plugin purpose to make search filter easier for admi
 
 == Installation ==
 1. Upload the plugin files to the `/wp-content/plugins/csf-search-filter` directory, or install the plugin through the WordPress plugins screen directly.
-2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Navigate to the settings > WP Required Post Title or link `/wp-admin/options-general.php?page=search-filter-csf` to the pugin setting page
+or
+Use as theme functions after integration it must be build.
+2. Navigate to the settings > WP Required Post Title or link `/wp-admin/options-general.php?page=search-filter-csf` to the pugin setting page
 
 == Frequently Asked Questions ==
 = Can we apply to particular post type? =

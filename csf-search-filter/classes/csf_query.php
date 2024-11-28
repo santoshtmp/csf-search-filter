@@ -53,8 +53,6 @@ class CSF_Query
                 // isset($queried_object->name) ? $queried_object->name : '';
                 // taxo list  page
                 $query_taxonomy = isset($queried_object->taxonomy) ? $queried_object->taxonomy : ''; // isset($query->tax_query->queries[0]['taxonomy']) ? $query->tax_query->queries[0]['taxonomy'] : '';
-                $enable_elastic_search =  get_field('enable_elastic_search', 'elastic-search');
-
                 if (
                     ($query_post_type && is_post_type_archive($query_post_type)) ||
                     ($query_taxonomy  && $query->is_tax($query_taxonomy))
@@ -62,12 +60,6 @@ class CSF_Query
                     $search_fields = \csf_search_filter\CSF_Fields::set_search_fields();
                     $setting_key = '';
                     foreach ($search_fields as $key => $settings) {
-                        // 
-                        if ($enable_elastic_search) {
-                            if ($query_post_type == 'resource' || $query_post_type == 'project') {
-                                continue;
-                            }
-                        }
                         // 
                         if (isset($settings['is_main_query'])) {
                             if (!$settings['is_main_query'] || $settings['is_main_query'] != "true") {

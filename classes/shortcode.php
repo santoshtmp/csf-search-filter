@@ -5,10 +5,9 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Plugin URI: https://github.com/santoshtmp/csf-search-filter
  * Version: 1.0
- * Author: santoshtmp
  * =======================================
+ * echo do_shortcode('[csf_searchfilter filter_name = "filter_name" post_type = "post_type" ]');
  */
 
 namespace csf_search_filter;
@@ -88,7 +87,7 @@ class CSF_shortcode
         } else {
             $csf_query = new \csf_search_filter\CSF_Query();
             $query_args = new CSF_Args();
-            $csf_query->csf_query($fields_settings, $query_args, true);            
+            $csf_query->csf_query($fields_settings, $query_args, true);
             $csf_query = new WP_Query($query_args->getAll());
         }
         $template_path = isset($fields_settings['result_template']) ? $fields_settings['result_template'] : '';
