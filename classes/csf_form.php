@@ -57,6 +57,7 @@ class CSF_Form
             return;
         }
         $search_filter_title = (isset($fields_settings['search_filter_title'])) ? $fields_settings['search_filter_title'] : 'Filters';
+        $display_count = (isset($fields_settings['display_count'])) ? $fields_settings['display_count'] : 1;
         $form_id = 'csf-filter-' . str_replace([' '], '-', strtolower($filter_name));
         $result_area_id = "csf-result-area-" . str_replace([' '], '-', strtolower($filter_name));
         self::$form_ids[] = $form_id; ?>
@@ -95,7 +96,6 @@ class CSF_Form
                         // if there is no name then go to next field
                     }
                     $field_name = self::get_search_field_name($filter_title);
-                    $show_count = isset($field['display_count']) ? $field['display_count'] : 1;
                     $filter_items = (isset($field['filter_items'])) ? $field['filter_items'] : '';
                     if (!$filter_items || !is_array($filter_items)) {
                         $filter_items = [];
@@ -116,13 +116,13 @@ class CSF_Form
 
                     // check search_field_type
                     if ($search_field_type == 'dropdown') {
-                        $drop_down_get_value = \csf_search_filter\CSF_Form::dropdown_field($filter_title, $field_name, $filter_items, $show_count);
+                        $drop_down_get_value = \csf_search_filter\CSF_Form::dropdown_field($filter_title, $field_name, $filter_items, $display_count);
                         if (!$has_drop_down_get_value) {
                             $has_drop_down_get_value = $drop_down_get_value;
                         }
                     }
                     if ($search_field_type == 'checkbox') {
-                        $checkbox_get_value =  \csf_search_filter\CSF_Form::checkbox_field($form_id, $filter_title, $field_name, $filter_items, $show_count);
+                        $checkbox_get_value =  \csf_search_filter\CSF_Form::checkbox_field($form_id, $filter_title, $field_name, $filter_items, $display_count);
                         if (!$has_checkbox_get_value) {
                             $has_checkbox_get_value = $checkbox_get_value;
                         }

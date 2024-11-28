@@ -143,6 +143,7 @@ class CSF_Admin_setting
                             "taxonomies": "taxonomy_slug",
                             "posts_per_page":12,
                             "search_filter_title":"Text Title",
+                            "display_count":1
                             "fields":[
                                 {
                                     "display_name": "Region",
@@ -150,7 +151,6 @@ class CSF_Admin_setting
                                     "filter_term_key": "region_png_region_only",
                                     "metadata_reference": "taxonomy,png-region,slug",
                                     "search_field_type": "checkbox",
-                                    "display_count":0
                                 }
                             ],
                             "fields_actions": {
@@ -191,6 +191,7 @@ class CSF_Admin_setting
                     <li>
                         csf_search_filter['unique_filter_name']['search_filter_title'] = Search filter title in the search form
                     </li>
+                    <li> csf_search_filter['unique_filter_name']['display_count'] => 1 or 0; default 1</li>
                     <li>
                         csf_search_filter['unique_filter_name']['fields'] = Each filter fields values has following options
                         <ol>
@@ -208,7 +209,6 @@ class CSF_Admin_setting
                             </li>
                             <li>search_field_type => 'dropdown' or 'checkbox' or 'search_text'; default dropdown; there can only be one 'search_text' on each filter</li>
                             <li>placeholder => 'free text' ;only apply to search_field_type search_text</li>
-                            <li>display_count => 1 or 0; default 1</li>
                         </ol>
                     </li>
                     <li>
