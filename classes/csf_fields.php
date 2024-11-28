@@ -45,6 +45,45 @@ class CSF_Fields
         // initially define the fields
         $fields = [];
 
+        // For resource post type search filter
+        $resource_filter = [];
+        $resource_filter_name = 'resource'; //filter name should be post type to query and filter by main wp query 
+        $resource_filter['post_type']  = $resource_filter_name; // post type to filter
+        // $resource_filter['taxonomies']  = 'resource-rights'; // seperate the multiple taxonomy by (,) comma
+        $resource_filter['is_main_query'] = true; // It may overried my others plugin or functions
+        $resource_filter['posts_per_page'] = 24; // post per page in post wq query result page
+        $resource_filter['search_filter_title'] = 'Filters'; // Search filter title in the search form
+        $resource_filter['fields']  = [
+            ['display_name' => '', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
+            ['display_name' => 'Sector', 'filter_term_type' => 'metadata', 'filter_term_key' => 'sector', 'metadata_reference' => 'taxonomy,resource-sector', 'search_field_type' => 'checkbox',],
+            ['display_name' => 'Commodity', 'filter_term_type' => 'metadata', 'filter_term_key' => 'commodity_type', 'metadata_reference' => 'taxonomy,commodity-type', 'search_field_type' => 'checkbox',],
+            ['display_name' => 'Country', 'filter_term_type' => 'metadata', 'filter_term_key' => 'country_only', 'metadata_reference' => 'get_plghub_cache_all_unsd_countries', 'search_field_type' => 'checkbox'],
+            // ['display_name' => 'Region', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_only', 'metadata_reference' => 'taxonomy,png-region,slug', 'search_field_type' => 'checkbox'],
+            //  search in both or more then one metadata is possible only in extera function search is developed; not in wp query.
+            ['display_name' => 'Region', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_only|region_unsd_region_only', 'metadata_reference' => 'taxonomy,png-region,slug|get_plghub_cache_all_unsd_region', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Province', 'filter_term_type' => 'metadata', 'filter_term_key' => 'region_png_region_province_only', 'metadata_reference' => 'taxonomy,png-region,slug', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Topic', 'filter_term_type' => 'metadata', 'metadata_reference' => 'taxonomy,topic', 'filter_term_key' => 'topic_sub_topic_list_{array}_topic_only', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Project', 'filter_term_type' => 'metadata', 'metadata_reference' => 'post', 'filter_term_key' => 'project_name', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Resource type', 'filter_term_type' => 'metadata', 'filter_term_key' => 'resource_type', 'metadata_reference' => 'taxonomy,resource-type', 'search_field_type' => 'checkbox',],
+            ['display_name' => 'Organisation', 'filter_term_type' => 'metadata', 'filter_term_key' => 'organisation', 'metadata_reference' => 'taxonomy,organisation', 'search_field_type' => 'checkbox',],
+            ['display_name' => 'Publisher', 'filter_term_type' => 'metadata', 'filter_term_key' => 'publisher', 'metadata_reference' => 'taxonomy,publisher', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Year', 'filter_term_type' => 'metadata', 'filter_term_key' => 'publication_year_only', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Format', 'filter_term_type' => 'metadata', 'filter_term_key' => 'format', 'metadata_reference' => 'taxonomy,format', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Rights', 'filter_term_type' => 'metadata', 'metadata_reference' => 'taxonomy,resource-rights', 'filter_term_key' => 'rights_license_type_rights_only', 'search_field_type' => 'checkbox'],
+            ['display_name' => 'Access', 'filter_term_type' => 'metadata', 'filter_term_key' => 'access', 'search_field_type' => 'checkbox'],
+        ];
+        $resource_filter['free_search']['meta_keys'] = ['description', 'publication_year_only']; //applied only in "OR" relation
+        // $resource_filter['free_search']['post_taxonomies'] = ['keywords-tag', 'resource-type', 'commodity-type', 'resource-sector', 'format'];
+        $resource_filter['field_relation'] = "AND";
+        // $resource_filter['result_template'] = "";
+        $resource_filter['fields_actions']  = [
+            'auto_submit' => true,
+            'submit_btn_show' => false,
+            'submit_display_name' => 'Search',
+            'reset_btn_show' => true,
+            'reset_display_name' => 'Reset'
+        ];
+
         // Tools archive page Filter
         $tool_filter = [];
         $tool_filter_name = 'application-tool'; //filter name should be post type to query and filter by main wp query 
@@ -73,6 +112,7 @@ class CSF_Fields
 
 
         // return field settings
+        $fields[$resource_filter_name]  = $resource_filter;
         $fields[$tool_filter_name]  = $tool_filter;
 
 
