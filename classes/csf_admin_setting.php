@@ -144,6 +144,10 @@ class CSF_Admin_setting
                             "posts_per_page":12,
                             "search_filter_title":"Text Title",
                             "display_count":1
+                            "result_filter_area":"",
+                            "field_relation":"OR",
+                            "result_template":"",
+                            "dynamic_filter_item":true,
                             "fields":[
                                 {
                                     "display_name": "Region",
@@ -151,6 +155,8 @@ class CSF_Admin_setting
                                     "filter_term_key": "region_png_region_only",
                                     "metadata_reference": "taxonomy,png-region,slug",
                                     "search_field_type": "checkbox",
+                                    "placeholder":"",
+                                    "filter_items":[[]]
                                 }
                             ],
                             "fields_actions": {
@@ -168,8 +174,6 @@ class CSF_Admin_setting
                                     "taxonomy"
                                 ]
                             },
-                            "field_relation":"OR",
-                            "result_template":""
                         }   
                     }</pre>
                 <ol>
@@ -191,7 +195,14 @@ class CSF_Admin_setting
                     <li>
                         csf_search_filter['unique_filter_name']['search_filter_title'] = Search filter title in the search form
                     </li>
-                    <li> csf_search_filter['unique_filter_name']['display_count'] => 1 or 0; default 1</li>
+                    <li> csf_search_filter['unique_filter_name']['display_count'] => 1 or 0; OPTIONAL; default 0</li>
+                    <li>
+                        csf_search_filter['unique_filter_name']['result_filter_area'] => ""; OPTIONAL; html section id, where the result is shown.
+                    </li>
+                    <li>csf_search_filter['unique_filter_name']['field_relation'] = "OR / AND"; default "OR"; OPTIONAL
+                    </li>
+                    <li>csf_search_filter['unique_filter_name']['result_template'] => 'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme;</li>
+                    <li> csf_search_filter['unique_filter_name']['dynamic_filter_item'] = true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.</li>
                     <li>
                         csf_search_filter['unique_filter_name']['fields'] = Each filter fields values has following options
                         <ol>
@@ -203,35 +214,53 @@ class CSF_Admin_setting
                                 Also define multiple key by seperating with "|", under same display name
                             </li>
                             <li>
-                                metadata_reference => 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined' or 'taxonomy,taxonomy_key,slug|post' ; only apply to filter_term_key = 'metadata_key' Where ON 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
+                                metadata_reference => 'past_upcoming_date_compare','taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined' or 'taxonomy,taxonomy_key,slug|post' ; only apply to filter_term_key = 'metadata_key' Where ON 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
                                 <br>
                                 Also define multiple key by seperating with "|", under same display name
                             </li>
                             <li>search_field_type => 'dropdown' or 'checkbox' or 'search_text'; default dropdown; there can only be one 'search_text' on each filter</li>
                             <li>placeholder => 'free text' ;only apply to search_field_type search_text</li>
+                            <li>filter_items => [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; OPTIONA; If this is defined, it will replace the filter items. </li>
                         </ol>
                     </li>
                     <li>
                         csf_search_filter['unique_filter_name']['fields_actions'] =[] :: Search filter action like auto submit, submit and reset button
+                        <ol>
+                            <li>
+                                ['unique_filter_name']['fields_actions']['auto_submit']=true or false;
+                            </li>
+                            <li>
+                                ['unique_filter_name']['fields_actions']['submit_btn_show']=true or false;
+                            </li>
+                            <li>
+                                ['unique_filter_name']['fields_actions']['submit_display_name']= "Search"; // submit btn label
+                            </li>
+                            <li>
+                                ['unique_filter_name']['fields_actions']['reset_btn_show']=true or false;
+                            </li>
+                            <li>
+                                ['unique_filter_name']['fields_actions']['reset_display_name']="Reset"; // Reset btn label
+                            </li>
+                        </ol>
                     </li>
                     <li>
                         csf_search_filter['unique_filter_name']['free_search'] = define the meta_key and taxonomy to accept free text search; free_search will only work with field_relation="OR"
                     </li>
-                    <li>csf_search_filter['unique_filter_name']['field_relation'] = "OR / AND"; default "OR"; OPTIONAL
-                    </li>
-                    <li>csf_search_filter['unique_filter_name']['result_template'] => 'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme;</li>
 
                 </ol>
             </div>
             <div id="csf_form_display_help_desc" class="help-info" style="display: none; ">
                 <h4>CSF Form Display Setting</h4>
                 <pre>
-    $search_form = [];
+    $search_form = [
+        filter_name => "unique_filter_name",
+        post_type =>  "post_type"
+    ];
     \csf_search_filter\CSF_Form::the_search_filter_form($search_form);
 
     OR 
 
-    echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" data_url="" ]');
+    echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" post_type = "post_type" ]');
 
                     </pre>
                 <ol>

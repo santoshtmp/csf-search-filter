@@ -19,13 +19,18 @@ class CSF_Enqueue
     // 
     public static function csf_search_js($form_id = ['csf-filter-form'], $filter_name = '', $invalid_csf_value = false)
     {
-        \Vite::enqueue_module();
-        $js_file_path = \Vite::asset('csf-search-filter/js/csf-search-filter.js');
+        $js_file_path = 'csf-search-filter/js/csf-search-filter.js';
+        try {
+            \Vite::enqueue_module();
+            $js_file_path_url = \Vite::asset($js_file_path);
+        } catch (\Throwable $th) {
+            $js_file_path_url = get_stylesheet_directory_uri() . '/' . $js_file_path;
+        }
         wp_enqueue_script(
             'csf-filter',
-            $js_file_path,
+            $js_file_path_url,
             array('jquery'),
-            filemtime(get_stylesheet_directory($js_file_path)),
+            filemtime(get_stylesheet_directory($js_file_path_url)),
             array(
                 'in_footer' => true,
                 'strategy' => 'defer'
@@ -64,13 +69,20 @@ class CSF_Enqueue
             )
         );
         // csf js
-        \Vite::enqueue_module();
-        $js_file_path = \Vite::asset('csf-search-filter/js/csf_admin_settings.js');
+
+        $js_file_path = 'csf-search-filter/js/csf_admin_settings.js';
+        try {
+            \Vite::enqueue_module();
+            $js_file_path_url = \Vite::asset($js_file_path);
+        } catch (\Throwable $th) {
+            $js_file_path_url = get_stylesheet_directory_uri() . '/' . $js_file_path;
+        }
+
         wp_enqueue_script(
             'csf_admin_settings',
-            $js_file_path,
+            $js_file_path_url,
             array('jquery'),
-            filemtime(get_stylesheet_directory($js_file_path)),
+            filemtime(get_stylesheet_directory($js_file_path_url)),
             array(
                 'in_footer' => true,
                 'strategy' => 'defer'

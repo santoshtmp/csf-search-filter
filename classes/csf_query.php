@@ -46,16 +46,20 @@ class CSF_Query
     {
         if (!is_admin() && $query->is_main_query()) {
 
-            if (is_archive() || is_tax()) {
+            // $posts_page_id = get_option('page_for_posts');
+            $default_post_page = (is_home() && ! is_front_page());
+            if (is_archive() || is_tax() || $default_post_page) {
                 $queried_object = get_queried_object();
                 // archive post list page
                 $query_post_type =  isset($query->query_vars['post_type']) ? $query->query_vars['post_type'] : '';
+                $query_post_type = ($default_post_page) ? 'post' : $query_post_type;
                 // isset($queried_object->name) ? $queried_object->name : '';
                 // taxo list  page
                 $query_taxonomy = isset($queried_object->taxonomy) ? $queried_object->taxonomy : ''; // isset($query->tax_query->queries[0]['taxonomy']) ? $query->tax_query->queries[0]['taxonomy'] : '';
                 if (
                     ($query_post_type && is_post_type_archive($query_post_type)) ||
-                    ($query_taxonomy  && $query->is_tax($query_taxonomy))
+                    ($query_taxonomy  && $query->is_tax($query_taxonomy)) ||
+                    $default_post_page
                 ) {
                     $search_fields = \csf_search_filter\CSF_Fields::set_search_fields();
                     $setting_key = '';
@@ -136,6 +140,7 @@ class CSF_Query
         // search fields
         $fields = isset($fields_settings['fields']) ? $fields_settings['fields'] : [];
         if ($fields) {
+            $_GET_search_text = '';
             $tax_query =  [];
             $meta_query = [];
             foreach ($fields as $key =>  $field) {
@@ -201,6 +206,8 @@ class CSF_Query
                 // get name and its value
                 $field_name = \csf_search_filter\CSF_Form::get_search_field_name($filter_title);
                 $_GET_field_name_val = isset($_GET[$field_name]) ? $_GET[$field_name] : '';
+                $meta_query_compare = 'LIKE';
+                $meta_query_type = '';
 
                 // filter_term_key => 'taxonomy_key' or 'metadata_key'; [if meta_key is in array: example metakey_{array}_metakey]
                 $all_filter_term_key = (isset($field['filter_term_key'])) ? $field['filter_term_key'] : '';
@@ -218,6 +225,7 @@ class CSF_Query
                     $metadata_reference = isset($all_metadata_reference[$key]) ? $all_metadata_reference[$key] : '';
                     if ($metadata_reference) {
                         $metadata_reference = explode(',', $metadata_reference);
+                        // for metadata ref taxonomy
                         if ($metadata_reference[0] == 'taxonomy' && isset($metadata_reference[1])) {
                             // check if the taxonomy is associalted with current post type
                             $taxonomy = $metadata_reference[1];
@@ -252,6 +260,29 @@ class CSF_Query
                                 }
                             }
                         }
+                        // for metadata ref past upcoming date compare
+                        if ($metadata_reference[0] == 'past_upcoming_date_compare') {
+                            $meta_query_type = 'DATE';
+
+                            if (is_array($_GET_field_name_val)) {
+                                $meta_query_compare = [];
+                                foreach ($_GET_field_name_val as $key => $value) {
+                                    if ($value == 'past') {
+                                        $meta_query_compare[$key] = '<';
+                                    }
+                                    if ($value == 'upcoming') {
+                                        $meta_query_compare[$key] = '>=';
+                                    }
+                                }
+                            } else {
+                                if ($_GET_field_name_val == 'past') {
+                                    $meta_query_compare = '<';
+                                }
+                                if ($_GET_field_name_val == 'upcoming') {
+                                    $meta_query_compare = '>=';
+                                }
+                            }
+                        }
                     }
                     // taxonomy field data filter_term_type
                     if ($filter_term_type == 'taxonomy') {
@@ -273,7 +304,8 @@ class CSF_Query
                         if ($search_field_type == 'checkbox') {
                             if ($_GET_field_name_val && is_array($_GET_field_name_val)) {
                                 foreach ($_GET_field_name_val as $key => $_GET_meta_value) {
-                                    $meta_query[] = $this->meta_filter_query($filter_term_key,  $_GET_meta_value);
+                                    $query_compare = is_array($meta_query_compare) ? $meta_query_compare[$key] : $meta_query_compare;
+                                    $meta_query[] = $this->meta_filter_query($filter_term_key,  $_GET_meta_value, $query_compare, $meta_query_type);
                                     // as post meta value is stored in mult arrays
                                     // $meta_query[] = $this->meta_filter_query($filter_term_key, '"' . $_GET_meta_value . '"');
                                 }
@@ -281,12 +313,13 @@ class CSF_Query
                         }
                         if ($search_field_type == 'dropdown') {
                             if ($_GET_field_name_val) {
-                                $meta_query[] = $this->meta_filter_query($filter_term_key, $_GET_field_name_val);
+                                $meta_query[] = $this->meta_filter_query($filter_term_key, $_GET_field_name_val, $meta_query_compare, $meta_query_type);
                             }
                         }
                     }
                 }
             }
+
 
             if ($field_relation == "AND") {
                 if ($_GET_search_text) {
@@ -328,13 +361,18 @@ class CSF_Query
 
 
     // 
-    public function meta_filter_query($meta_key, $meta_value, $compare = 'LIKE')
+    public function meta_filter_query($meta_key, $meta_value, $compare = 'LIKE', $type = '')
     {
-        return array(
+        $meta_query =  [
             'key' => $meta_key,
             'value' => $meta_value,
             'compare' => $compare,
-        );
+        ];
+        if ($type == 'DATE') {
+            $meta_query['value'] = date('Y-m-d');
+            $meta_query['type'] = $type;
+        }
+        return $meta_query;
     }
 
     /**
@@ -362,12 +400,22 @@ class CSF_Query
                     $meta_key = $query['key'];
                     $meta_value = $query['value'];
                     $compare = $query['compare'];
+                    $type = $query['type'];
+                    if (is_array($meta_value) || is_array($compare)) {
+                        continue;
+                    }
+
                     if ($compare === 'LIKE') {
                         $meta_value_compare = $compare . " '%$meta_value%' ";
                     } else {
                         $meta_value_compare = $compare . " '$meta_value' ";
                     }
-                    $custom_where[] = " ($wpdb->postmeta.meta_key = '$meta_key' AND $wpdb->postmeta.meta_value $meta_value_compare) ";
+
+                    if ($type === 'DATE') {
+                        $custom_where[] = " ($wpdb->postmeta.meta_key = '$meta_key' AND  CAST($wpdb->postmeta.meta_value AS DATE) $meta_value_compare) ";
+                    } else {
+                        $custom_where[] = " ($wpdb->postmeta.meta_key = '$meta_key' AND $wpdb->postmeta.meta_value $meta_value_compare) ";
+                    }
                 }
             }
             if ($tax_query && is_array($tax_query)) {
