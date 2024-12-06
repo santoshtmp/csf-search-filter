@@ -33,6 +33,7 @@ class CSF_Form
         global $wp;
         global $invalid_csf_value;
         $invalid_csf_value = false;
+        // global $wp_query; var_dump($wp_query->request);
 
         $form_class = (isset($search_form['form_class'])) ? $search_form['form_class'] : "search-filter-form";
         $post_type = (isset($search_form['post_type'])) ? $search_form['post_type'] : '';
@@ -58,20 +59,21 @@ class CSF_Form
             return;
         }
         $search_filter_title = (isset($fields_settings['search_filter_title'])) ? $fields_settings['search_filter_title'] : 'Filters';
+        $filter_name_short = str_replace([' '], '-', strtolower($filter_name));
         $display_count = (isset($fields_settings['display_count'])) ? $fields_settings['display_count'] : 0;
         $result_filter_area = (isset($fields_settings['result_filter_area'])) ? $fields_settings['result_filter_area'] : '';
         $dynamic_filter_item = (isset($fields_settings['dynamic_filter_item'])) ? $fields_settings['dynamic_filter_item'] : false;
-        
+
         // 
-        $form_id = 'csf-filter-' . str_replace([' '], '-', strtolower($filter_name));
+        $form_id = 'csf-filter-' . $filter_name_short;
         $result_area_id = "csf-result-area-";
         if ($result_filter_area) {
-            $result_area_id .= str_replace([' '], '-', strtolower($result_filter_area));
+            $result_area_id .= str_replace([' '], '-', strtolower(trim($result_filter_area)));
         } else {
-            $result_area_id .= str_replace([' '], '-', strtolower($filter_name));
+            $result_area_id .= $filter_name_short;
         }
         self::$form_ids[] = $form_id; ?>
-        <div class="search-form-wrapper">
+        <div class="search-form-wrapper <?php echo $filter_name_short; ?>">
             <?php if ($search_filter_title) { ?>
                 <h2 class='search-filter-title font-semibold text-sm m-4 mt-0'>
                     <?php echo esc_attr($search_filter_title); ?>
@@ -85,7 +87,7 @@ class CSF_Form
                 // wp_nonce_field('csf_nonce', '_csf_nonce', true, true);
                 // check and display each search filter field
                 $fields = $fields_settings['fields'];
-                $has_search_text_get_value = $has_drop_down_get_value = $has_checkbox_get_value = '';
+                $has_search_text_get_value = $has_drop_down_get_value = $has_checkbox_get_value = $has_radio_get_value = '';
                 foreach ($fields as $key => $field) {
                     // search_field_type
                     $search_field_type = (isset($field['search_field_type'])) ? $field['search_field_type'] : 'dropdown';
@@ -106,11 +108,12 @@ class CSF_Form
                         // if there is no name then go to next field
                     }
                     $field_name = self::get_search_field_name($filter_title);
+                    $metadata_reference = (isset($field['metadata_reference'])) ? $field['metadata_reference'] : '';
+                    $filter_term_key = (isset($field['filter_term_key'])) ? $field['filter_term_key'] : '';
                     $filter_items = (isset($field['filter_items'])) ? $field['filter_items'] : '';
                     if (!$filter_items || !is_array($filter_items)) {
                         $filter_items = [];
                         // check filter_term_type for taxonomy and metadara
-                        $filter_term_key = (isset($field['filter_term_key'])) ? $field['filter_term_key'] : '';
                         if (!$filter_term_key) {
                             echo "search filter field term_key is not set/defind";
                             continue;
@@ -119,10 +122,13 @@ class CSF_Form
                             $filter_items = get_terms(['taxonomy' => $filter_term_key, 'hide_empty' => true]);
                         }
                         if ($filter_term_type === 'metadata') {
-                            $metadata_reference = (isset($field['metadata_reference'])) ? $field['metadata_reference'] : '';
                             $filter_items = \csf_search_filter\CSF_Data::get_csf_metadata($post_type, $filter_term_key, $metadata_reference, $dynamic_filter_item, $all_post_ids);
                         }
                     }
+                    if ($metadata_reference == 'past_upcoming_date_compare' && $display_count) {
+                        $filter_items = CSF_Data::get_past_upcoming_date_compare_count($post_type, $filter_items, $filter_term_key);
+                    }
+
 
                     // check search_field_type
                     if ($search_field_type == 'dropdown') {
@@ -135,6 +141,12 @@ class CSF_Form
                         $checkbox_get_value = \csf_search_filter\CSF_Form::checkbox_field($form_id, $filter_title, $field_name, $filter_items, $display_count);
                         if (!$has_checkbox_get_value) {
                             $has_checkbox_get_value = $checkbox_get_value;
+                        }
+                    }
+                    if ($search_field_type == 'radio') {
+                        $radio_get_value = \csf_search_filter\CSF_Form::radio_field($form_id, $filter_title, $field_name, $filter_items, $display_count);
+                        if (!$has_radio_get_value) {
+                            $has_radio_get_value = $radio_get_value;
                         }
                     }
                     // 
@@ -164,7 +176,12 @@ class CSF_Form
                         }
                         if ($reset_btn_show == 'true') {
                             $reset_display = 'display: none;';
-                            if ($has_search_text_get_value || $has_drop_down_get_value || $has_checkbox_get_value) {
+                            if (
+                                $has_search_text_get_value ||
+                                $has_drop_down_get_value ||
+                                $has_checkbox_get_value ||
+                                $has_radio_get_value
+                            ) {
                                 $reset_display = '';
                             }
                         ?>
@@ -308,8 +325,76 @@ class CSF_Form
                                     value="<?php echo $value['slug']; ?>" <?php echo $checkbox_checked; ?>>
                                 <span class='checkmark'></span>
                             </div>
+                            <div class="label-wrapper">
+                                <span class="label-name"><?php echo ucfirst($value['name']); ?></span>
+                                <?php
+                                if ($show_count && isset($value['count'])) {
+                                ?>
+                                    <span class="label-count">(<?php echo $value['count']; ?>)</span>
+                                <?php
+                                }
+                                ?>
+                            </div>
+                        </label>
+                    </div>
+                <?php
+                }
+                ?>
+            </div>
+        </div>
+    <?php
+        return $select_checkbox;
+    }
+
+    // form radio_field field
+    public static function radio_field($form_id, $filter_title, $field_name, $filter_items, $show_count = 0)
+    {
+        $active_filter = isset($_GET['active_filter']) ? $_GET['active_filter'] : '';
+        $select_radio = isset($_GET[$field_name]) ? $_GET[$field_name] : '';
+        $active_filter = ($active_filter == $field_name) ? 'active' : '';
+        $filter_active_class = ($select_radio) ? 'active' : $active_filter;
+        if ($select_radio && !$filter_items) {
+            global $invalid_csf_value;
+            $invalid_csf_value = true;
+        }
+        if (!$filter_items) {
+            return $select_radio;
+        }
 
 
+    ?>
+        <div class="filter-block radio-field <?php echo esc_attr($filter_active_class); ?>">
+            <div class="filter-title <?php echo esc_attr($filter_active_class); ?>">
+                <div class='title flex gap-x-1.5 items-center'>
+                    <?php echo esc_attr($filter_title); ?>
+                </div>
+            </div>
+            <div class="filter-item-list-wrapper ">
+                <?php
+                if ($field_name == 'csf_year') {
+                    array_multisort(array_column($filter_items, 'name'), SORT_DESC, $filter_items);
+                } else {
+                    array_multisort(array_column($filter_items, 'name'), SORT_ASC, $filter_items);
+                }
+                foreach ($filter_items as $each_key => $value) {
+                    $value = (array) $value;
+                    $radio_checked = '';
+                    if (isset($value['slug'])) {
+                        $radio_checked =  ($select_radio == $value['slug']) ? 'checked' : '';
+                    }
+                    $unique_filter_item_name = $field_name . '-' . $value['slug']
+                ?>
+                    <div class="filter-item filter-radio-wrapper" item-type="<?php echo esc_attr($unique_filter_item_name); ?>">
+
+                        <label class='filter-input-label gap-x-1.5'
+                            for="<?php echo esc_attr($form_id . '-' . $unique_filter_item_name); ?>">
+
+                            <div class='filter-input-wrapper custom-radio'>
+                                <input type="radio" name="<?php echo esc_attr($field_name); ?>"
+                                    id="<?php echo esc_attr($form_id . '-' . $unique_filter_item_name); ?>"
+                                    value="<?php echo $value['slug']; ?>" <?php echo $radio_checked; ?>>
+                                <span class='checkmark'></span>
+                            </div>
                             <div class="label-wrapper">
                                 <span class="label-name"><?php echo ucfirst($value['name']); ?></span>
                                 <?php
@@ -328,7 +413,7 @@ class CSF_Form
             </div>
         </div>
 <?php
-        return $select_checkbox;
+        return $select_radio;
     }
 
     // SF_Form class end

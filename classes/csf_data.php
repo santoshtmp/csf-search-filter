@@ -32,6 +32,11 @@ class CSF_Data
         if (!$post_type || !$meta_key) {
             return;
         }
+
+        if ($metadata_reference == 'asc_desc_sort_by') {
+            return CSF_Data::get_asc_desc_sort_filter_items();
+        }
+
         $seperate_meta_key =  explode("|", $meta_key);
         $seperate_metadata_reference =  explode("|", $metadata_reference);
         $meta_info = [];
@@ -175,6 +180,54 @@ class CSF_Data
             'meta_val_name' => $meta_val_name,
             'meta_val_slug' => $meta_val_slug,
             'meta_val_parent' => $meta_val_parent,
+        ];
+    }
+
+    /**
+     * get count data for past_upcoming_date_compare_count metadata_reference
+     */
+    public static function get_past_upcoming_date_compare_count($post_type, $filter_items, $filter_term_key)
+    {
+        foreach ($filter_items as $key => $items) {
+            $meta_query_compare = '';
+            $posts_count = 0;
+            if ($items['slug'] == 'past') {
+                $meta_query_compare = '<';
+            }
+            if ($items['slug'] == 'upcoming') {
+                $meta_query_compare = '>=';
+            }
+            if ($meta_query_compare) {
+                $meta_query = CSF_Query::meta_filter_query($filter_term_key, $items['slug'], $meta_query_compare, 'DATE');
+                $post_args = [
+                    'post_type' => $post_type,
+                    'posts_per_page' => -1,
+                    'post_status' => array('publish'),
+                    'meta_query' => [
+                        $meta_query
+                    ]
+                ];
+                $posts_count = count(get_posts($post_args));
+            }
+            $filter_items[$key]['count'] = $posts_count;
+        }
+        return $filter_items;
+    }
+
+    /**
+     *  asc desc sort filter_items 
+     * */
+    public static function get_asc_desc_sort_filter_items()
+    {
+        return [
+            [
+                'slug' => 'ASC',
+                'name' => 'ASC'
+            ],
+            [
+                'slug' => 'DESC',
+                'name' => 'DESC'
+            ],
         ];
     }
 

@@ -59,14 +59,14 @@ jQuery(function ($) {
             check_old_active_filter_block();
             // update search url
             // window.history.replaceState('', 'url', submission_link);
-            // update csf result number 
+            // update csf result number
             let search_number_info = htmlDoc.find('#search-number-info').html();
             if (search_number_info) {
               $('#search-number-info').html(search_number_info);
             } else {
               $('#search-number-info').html('');
             }
-            // 
+            //
             request.filter_area = true;
           } else {
             filter_area.html(failed_data);
@@ -111,7 +111,7 @@ jQuery(function ($) {
     // });
     $(document).on(
       'change',
-      '#' + csf_filter_form_id + ' select, #' + csf_filter_form_id + ' input[type="checkbox"]',
+      '#' + csf_filter_form_id + ' select, #' + csf_filter_form_id + ' input[type="radio"], #' + csf_filter_form_id + ' input[type="checkbox"]',
       function (e) {
         change_filte_item_id = $(this).attr('id');
         filter_form.trigger('submit');
@@ -119,7 +119,9 @@ jQuery(function ($) {
     );
 
     // filter_rest_btn.on('click', function () {
-    $(document).on('click', 'form#' + csf_filter_form_id + ' .filter-reset-btn button', function () {
+    $(document).on('click', 'form#' + csf_filter_form_id + ' .filter-reset-btn a', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
       setTimeout(() => {
         change_filte_item_id = '';
         get_XMLHttpRequest_Data(csf_result_area_id, filter_form, filter_form.attr('data-url'));
@@ -130,7 +132,6 @@ jQuery(function ($) {
     if (csf_obj.invalid_csf_value) {
       $('#' + csf_result_area_id).append(' <p>Invalid search filter value is provided.  </p> ');
     }
-
 
     // Pagination filter
     $(document).on('click', '.pagination a', function (e) {
@@ -145,7 +146,7 @@ jQuery(function ($) {
       }
     });
 
-    // 
+    //
   });
 
   // move the section view to the active filter block
@@ -171,9 +172,23 @@ jQuery(function ($) {
   }
 
   // toggle accordion
-  $(document).on('click', '.search-form-wrapper .accordion__title-container', function (e) {
+  $(document).on('click', '.filter-block', function (e) {
     $(this).toggleClass('active');
     $(this).parent().toggleClass('active');
+  });
+
+  // Toggle the accordions when clicking on a funnel
+  $(document).on('click', '.archive-page .funnel-icon-wrapper', () => {
+    const accordions = $('.archive-page .filter-block.accordion');
+    accordions.toggleClass('hidden');
+  });
+
+  // Hide the filters on initial load in mobile view
+  $(document).ready(() => {
+    const accordions = $('.archive-page .filter-block.accordion');
+    if ($(window).width() < 768) {
+      accordions.addClass('hidden');
+    }
   });
 
   /**

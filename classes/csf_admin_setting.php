@@ -214,11 +214,11 @@ class CSF_Admin_setting
                                 Also define multiple key by seperating with "|", under same display name
                             </li>
                             <li>
-                                metadata_reference => 'past_upcoming_date_compare','taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined' or 'taxonomy,taxonomy_key,slug|post' ; only apply to filter_term_key = 'metadata_key' Where ON 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
+                                metadata_reference => 'asc_desc_sort_by', 'past_upcoming_date_compare', 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; This reference only apply to filter_term_key = metadata_key, For 'asc_desc_sort_by' filter_items must be provided with slug 'ASC' and 'DESC' also it can be used only once in one form., For 'past_upcoming_date_compare' filter_items must be provided with slug 'past' and 'upcoming' ,For 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value, For 'post' it will give post name where metadata_key must return post id.
                                 <br>
                                 Also define multiple key by seperating with "|", under same display name
                             </li>
-                            <li>search_field_type => 'dropdown' or 'checkbox' or 'search_text'; default dropdown; there can only be one 'search_text' on each filter</li>
+                            <li>search_field_type => 'dropdown' or 'checkbox' or 'search_text' or "radio"; default dropdown; there can only be one 'search_text' on each filter</li>
                             <li>placeholder => 'free text' ;only apply to search_field_type search_text</li>
                             <li>filter_items => [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; OPTIONA; If this is defined, it will replace the filter items. </li>
                         </ol>

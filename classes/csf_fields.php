@@ -29,7 +29,7 @@ class CSF_Fields
         return self::set_search_fields_default();
     }
 
-     /**
+    /**
      * 
      * Each Filter must have unique_filter_name and the options
      * unique_filter_name => ""; Unique filter name. :: REQUIRED
@@ -40,7 +40,7 @@ class CSF_Fields
      * post_type=>"post"; //REQUIRED;  post type to filter
      * taxonomies=> ""; // seperate the multiple taxonomy by (,) comma
      * posts_per_page=>"12"; post per page in post wq query result page
-     * field_relation=>"AND" or "OR" 
+     * field_relation=>"AND" or "OR" ; Default "AND"
      * search_filter_title => ""; Search filter title in the search form
      * display_count => 1 or 0; OPTIONAL; default 0
      * result_filter_area => ''; // OPTIONAL; html id where result template is shown 
@@ -55,8 +55,8 @@ class CSF_Fields
      * display_name=>'Display name'
      * filter_term_type => 'taxonomy' or 'metadata'
      * filter_term_key => 'taxonomy_key' or 'metadata_key'; [if single meta_key has multiple metavalue in case of repeater metavalue:: example metakey_{array}_metakey]
-     * metadata_reference => 'past_upcoming_date_compare','taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; only apply to filter_term_key metadata_key Where 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value .
-     * search_field_type => 'dropdown' or 'checkbox' or 'search_text'; there can only be one 'search_text' on each filter
+     * metadata_reference => 'asc_desc_sort_by', 'past_upcoming_date_compare', 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; This reference only apply to filter_term_key = metadata_key, For 'asc_desc_sort_by' filter_items must be provided with slug 'ASC' and 'DESC' also it can be used only once in one form., For 'past_upcoming_date_compare' filter_items must be provided with slug 'past' and 'upcoming' ,For 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value, For 'post' it will give post name where metadata_key must return post id.
+     * search_field_type => 'dropdown' or 'checkbox' or 'search_text' or 'radio'; there can only be one 'search_text' on each filter
      * placeholder => 'free text' ;only apply to search_field_type search_text
      * filter_items=> [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; If this is defined, it will replace the filter items.
      * ------------------------------------------------------------------
@@ -179,14 +179,26 @@ class CSF_Fields
      */
     protected static function event_filter_fields()
     {
+        // 
+        $filter_items_date = [
+            [
+                'slug' => 'upcoming',
+                'name' => 'Upcoming Events'
+            ],
+            [
+                'slug' => 'past',
+                'name' => 'Past Events'
+            ],
+        ];
+
         // Update post archive page Filter
         $filter_fields = [];
         $filter_fields_name = 'event'; //filter name should be post type to query and filter by main wp query 
         $filter_fields['post_type']  = $filter_fields_name; // post type to filter
         $filter_fields['is_main_query'] = true;
-        $filter_fields['posts_per_page'] = 4; // post per page in post wq query result page
+        $filter_fields['posts_per_page'] = 6; // post per page in post wq query result page
         $filter_fields['search_filter_title'] = ''; // Search filter title in the search form
-        $filter_fields['field_relation'] = "OR";
+        $filter_fields['field_relation'] = "AND";
         $filter_fields['display_count'] = 0;
         $filter_fields['result_filter_area'] = ''; // section html id
         $filter_fields['dynamic_filter_item'] = true;
@@ -197,25 +209,11 @@ class CSF_Fields
             'reset_btn_show' => true,
             'reset_display_name' => 'Reset'
         ];
-        $filter_items_date =
-            [
-                [
-                    'slug' => 'upcoming',
-                    'name' => 'Upcoming Events'
-                ],
-                [
-                    'slug' => 'past',
-                    'name' => 'Past Events'
-                ],
-
-            ];
-
         $filter_fields['fields']  = [
             ['display_name' => '', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
             ['display_name' => 'Service Area', 'filter_term_type' => 'metadata', 'filter_term_key' => 'related_service_area', 'metadata_reference' => 'post', 'search_field_type' => 'checkbox'],
-
-            ['display_name' => 'Event Type', 'filter_term_type' => 'metadata', 'filter_items' => $filter_items_date, 'filter_term_key' => 'end_date_and_time', 'metadata_reference' => 'past_upcoming_date_compare', 'search_field_type' => 'checkbox'],
-
+            ['display_name' => 'Event Type', 'filter_term_type' => 'metadata', 'filter_items' => $filter_items_date, 'filter_term_key' => 'end_date_and_time', 'metadata_reference' => 'past_upcoming_date_compare', 'search_field_type' => 'radio'],
+            ['display_name' => 'Sort By Title', 'filter_term_type' => 'metadata', 'filter_term_key' => 'title', 'metadata_reference' => 'asc_desc_sort_by', 'search_field_type' => 'dropdown'],
         ];
         return [
             $filter_fields_name => $filter_fields
