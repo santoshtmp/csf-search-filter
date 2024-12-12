@@ -4,13 +4,11 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.0
+ * Version: 1.1
  * =======================================
  */
 
 namespace csf_search_filter;
-
-use WP_Query;
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
@@ -33,7 +31,7 @@ class CSF_Data
             return;
         }
 
-        if ($metadata_reference == 'asc_desc_sort_by') {
+        if (explode(",", $metadata_reference)[0] == 'asc_desc_sort_by') {
             return CSF_Data::get_asc_desc_sort_filter_items();
         }
 

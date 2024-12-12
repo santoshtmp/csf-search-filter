@@ -5,7 +5,7 @@
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
  * Plugin URI: https://github.com/santoshtmp/csf-search-filter
- * Version: 1.0
+ * Version: 1.1
  * Author: santoshtmp
  * =======================================
  */

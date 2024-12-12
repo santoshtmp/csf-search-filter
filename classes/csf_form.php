@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.0
+ * Version: 1.1
  * =======================================
  */
 
@@ -33,15 +33,15 @@ class CSF_Form
         global $wp;
         global $invalid_csf_value;
         $invalid_csf_value = false;
-        // global $wp_query; var_dump($wp_query->request);
-
-        $form_class = (isset($search_form['form_class'])) ? $search_form['form_class'] : "search-filter-form";
+        // get search filter form args
+        $filter_name = (isset($search_form['filter_name'])) ? $search_form['filter_name'] : '';
         $post_type = (isset($search_form['post_type'])) ? $search_form['post_type'] : '';
+        $form_class = (isset($search_form['form_class'])) ? $search_form['form_class'] : "search-filter-form";
         $data_url = (isset($search_form['data_url'])) ? $search_form['data_url'] : '';
+        $all_post_ids = (isset($search_form['all_post_ids'])) ? $search_form['all_post_ids'] : [];
+        // 
         $data_url = ($data_url) ?: home_url(add_query_arg(array(), $wp->request));
         $data_url = ($data_url) ? $data_url : home_url($post_type);
-        $filter_name = (isset($search_form['filter_name'])) ? $search_form['filter_name'] : '';
-        $all_post_ids = (isset($search_form['all_post_ids'])) ? $search_form['all_post_ids'] : [];
         // 
         if (!$filter_name) {
             echo "filter name is required";
@@ -51,7 +51,7 @@ class CSF_Form
             echo "post type is required";
             return;
         }
-
+        // get filter fields and settings
         $search_fields = \csf_search_filter\CSF_Fields::set_search_fields();
         $fields_settings = (isset($search_fields[$filter_name])) ? $search_fields[$filter_name] : '';
         if (!$fields_settings) {
@@ -59,12 +59,13 @@ class CSF_Form
             return;
         }
         $search_filter_title = (isset($fields_settings['search_filter_title'])) ? $fields_settings['search_filter_title'] : 'Filters';
-        $filter_name_short = str_replace([' '], '-', strtolower($filter_name));
         $display_count = (isset($fields_settings['display_count'])) ? $fields_settings['display_count'] : 0;
         $result_filter_area = (isset($fields_settings['result_filter_area'])) ? $fields_settings['result_filter_area'] : '';
         $dynamic_filter_item = (isset($fields_settings['dynamic_filter_item'])) ? $fields_settings['dynamic_filter_item'] : false;
-
+        $fields_actions = isset($fields_settings['fields_actions']) ? $fields_settings['fields_actions'] : '';
+        $fields = isset($fields_settings['fields']) ? $fields_settings['fields'] : [];
         // 
+        $filter_name_short = str_replace([' '], '-', strtolower($filter_name));
         $form_id = 'csf-filter-' . $filter_name_short;
         $result_area_id = "csf-result-area-";
         if ($result_filter_area) {
@@ -86,7 +87,6 @@ class CSF_Form
                 // setup csf_nonce
                 // wp_nonce_field('csf_nonce', '_csf_nonce', true, true);
                 // check and display each search filter field
-                $fields = $fields_settings['fields'];
                 $has_search_text_get_value = $has_drop_down_get_value = $has_checkbox_get_value = $has_radio_get_value = '';
                 foreach ($fields as $key => $field) {
                     // search_field_type
@@ -152,7 +152,6 @@ class CSF_Form
                     // 
                 }
                 // 
-                $fields_actions = isset($fields_settings['fields_actions']) ? $fields_settings['fields_actions'] : '';
                 if ($fields_actions) {
 
                     $auto_submit = isset($fields_actions['auto_submit']) ? $fields_actions['auto_submit'] : true;
@@ -254,16 +253,9 @@ class CSF_Form
                         item-type="<?php echo esc_attr($unique_filter_item_name); ?>"
                         option-id="<?php echo (isset($value['term_id'])) ? $value['term_id'] : ''; ?>"
                         parent-id="<?php echo (isset($value['parent'])) ? $value['parent'] : ''; ?>" <?php echo $search_drop_select; ?>>
-                        <span class="label-name">
-                            <?php echo (isset($value['name'])) ? ucfirst($value['name']) : ''; ?>
-                        </span>
-                        <?php
+                        <?php echo (isset($value['name'])) ? ucfirst($value['name']) : '';
                         if ($show_count) {
-                        ?>
-                            <span class="label-count">
-                                <?php echo (isset($value['count'])) ? '(' . $value['count'] . ')' : ''; ?>
-                            </span>
-                        <?php
+                            echo (isset($value['count'])) ? '(' . $value['count'] . ')' : '';
                         }
                         ?>
                     </option>

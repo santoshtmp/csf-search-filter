@@ -1,0 +1,5 @@
+<?php
+
+/**
+ * Extra custom functions
+ */

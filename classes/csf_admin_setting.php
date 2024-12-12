@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.0
+ * Version: 1.1
  * =======================================
  */
 
@@ -121,7 +121,7 @@ class CSF_Admin_setting
             <button type="button" id="csf_set_search_fields_format">Format Code</button>
             <button type="button" class="btn btn-primary" data-action="csf_set_search_fields_default"> Set Default Value</button>
             <button type="button" class="help_btn" help-info-id="csf_search_fields_help_desc">
-                Set Search Field Help
+                Set Search Form Field Help
                 <img src="<?php echo esc_attr($close_icon_url); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
             </button>
             <button type="button" class="help_btn" help-info-id="csf_form_display_help_desc">
@@ -148,6 +148,10 @@ class CSF_Admin_setting
                             "field_relation":"OR",
                             "result_template":"",
                             "dynamic_filter_item":true,
+                            "default_asc_desc_sort_by":{
+                                "order": "DESC",
+                                "orderby": "date"
+                            }
                             "fields":[
                                 {
                                     "display_name": "Region",
@@ -178,7 +182,7 @@ class CSF_Admin_setting
                     }</pre>
                 <ol>
                     <li>
-                        csf_search_filter['unique_filter_name'] = Unique filter name. :: REQUIRED
+                        csf_search_filter['unique_filter_name'] = Unique filter name. :: REQUIRED; Each Filter must have unique_filter_name
                     </li>
                     <li>
                         csf_search_filter['unique_filter_name']['is_main_query'] = true or false, this is to make the wp main query in archive or taxonomy page. This may be overried if other search is enable
@@ -203,6 +207,7 @@ class CSF_Admin_setting
                     </li>
                     <li>csf_search_filter['unique_filter_name']['result_template'] => 'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme;</li>
                     <li> csf_search_filter['unique_filter_name']['dynamic_filter_item'] = true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.</li>
+                    <li> csf_search_filter['unique_filter_name']['default_asc_desc_sort_by'] = [ "order"=>"ASC", "orderby"=>"", "meta_key"=>""]; OPTIONAL.</li>
                     <li>
                         csf_search_filter['unique_filter_name']['fields'] = Each filter fields values has following options
                         <ol>
@@ -214,7 +219,7 @@ class CSF_Admin_setting
                                 Also define multiple key by seperating with "|", under same display name
                             </li>
                             <li>
-                                metadata_reference => 'asc_desc_sort_by', 'past_upcoming_date_compare', 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; This reference only apply to filter_term_key = metadata_key, For 'asc_desc_sort_by' filter_items must be provided with slug 'ASC' and 'DESC' also it can be used only once in one form., For 'past_upcoming_date_compare' filter_items must be provided with slug 'past' and 'upcoming' ,For 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value, For 'post' it will give post name where metadata_key must return post id.
+                                metadata_reference => 'asc_desc_sort_by,meta_key', 'past_upcoming_date_compare', 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; <br> This reference only apply to filter_term_key = metadata_key, <br> For 'asc_desc_sort_by,meta_key' filter_items must be provided with slug 'ASC' and 'DESC' also it can be used only once in one form, meta_key is the custom_meta_key and filter_term_key is orderby value.,<br> For 'past_upcoming_date_compare' filter_items must be provided with slug 'past' and 'upcoming'. <br>For 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value,<br> For 'post' it will give post name where metadata_key must return post id.
                                 <br>
                                 Also define multiple key by seperating with "|", under same display name
                             </li>
@@ -254,7 +259,10 @@ class CSF_Admin_setting
                 <pre>
     $search_form = [
         filter_name => "unique_filter_name",
-        post_type =>  "post_type"
+        post_type =>  "post_type",
+        form_class => "",
+        data_url => "",
+        all_post_ids => []
     ];
     \csf_search_filter\CSF_Form::the_search_filter_form($search_form);
 
@@ -268,6 +276,7 @@ class CSF_Admin_setting
                     <li> $search_form['form_class'] = 'form_id'; default 'search-filter-form' </li>
                     <li> $search_form['post_type'] 'post_type'; default current_post_type</li>
                     <li> $search_form['data_url'] = 'data_action_url'; default current_post_archive_url </li>
+                    <li> $search_form['all_post_ids'] = array of specific post ids to query and filter. ;default empty array [].</li>
                 </ol>
             </div>
             <div id="csf_result_display_help_desc" class="help-info" style="display: none; ">

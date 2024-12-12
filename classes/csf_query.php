@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.0
+ * Version: 1.1
  * =======================================
  */
 
@@ -123,34 +123,35 @@ class CSF_Query
         //     return '';
         // }
 
+        $_GET_search_text = '';
+        $tax_query =  [];
+        $meta_query = [];
+        $sort_order_by = [];
+
         // post per page 
         $posts_per_page = (isset($fields_settings['posts_per_page'])) ? $fields_settings['posts_per_page'] : 12;
         if ($posts_per_page) {
             $query->set('posts_per_page', $posts_per_page);
         }
-
         // 
         $post_type = (isset($fields_settings['post_type'])) ? $fields_settings['post_type'] : 'page';
         if ($set_post_type) {
             $query->set('post_type', $post_type);
         }
-
+        // 
+        $default_asc_desc_sort_by = (isset($fields_settings['default_asc_desc_sort_by'])) ? $fields_settings['default_asc_desc_sort_by'] : [];
         // 
         $field_relation = (isset($fields_settings['field_relation'])) ? $fields_settings['field_relation'] : 'AND';
         // search fields
         $fields = isset($fields_settings['fields']) ? $fields_settings['fields'] : [];
+        // 
         if ($fields) {
-            $_GET_search_text = '';
-            $tax_query =  [];
-            $meta_query = [];
-            $sort_order_by = [];
             foreach ($fields as $key =>  $field) {
                 // search_field_type => 'dropdown' or 'checkbox' or 'search_text'
                 $search_field_type = (isset($field['search_field_type'])) ? $field['search_field_type'] : 'dropdown';
                 if ($search_field_type === 'search_text') {
                     $_GET_search_text = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
                     if ($_GET_search_text) {
-                        $custom_search_post['search'] = $_GET_search_text;
                         // other free_search
                         $free_search = (isset($fields_settings['free_search'])) ? $fields_settings['free_search'] : false;
                         if ($free_search && ($field_relation == "OR")) {
@@ -286,6 +287,9 @@ class CSF_Query
                         // for metadata reference asc desc sort by
                         if ($metadata_reference[0] == 'asc_desc_sort_by') {
                             $sort_order_by['orderby'] = $filter_term_key;
+                            if (isset($metadata_reference[1])) {
+                                $sort_order_by['meta_key'] = $metadata_reference[1];
+                            }
                         }
                     }
                     // taxonomy field data filter_term_type
@@ -329,35 +333,53 @@ class CSF_Query
                     }
                 }
             }
-
-
-            if ($field_relation == "AND") {
-                if ($_GET_search_text) {
-                    $query->set('s', $_GET_search_text);
+        }
+        // filter query
+        if ($field_relation == "AND") {
+            if ($_GET_search_text) {
+                $query->set('s', $_GET_search_text);
+            }
+            if ($tax_query) {
+                $tax_query['relation'] = $field_relation;
+                $query->set('tax_query', $tax_query);
+            }
+            if ($meta_query) {
+                $meta_query['relation'] = $field_relation;
+                $query->set('meta_query', $meta_query);
+            }
+        } else {
+            // set csf custom_search_post
+            if ($_GET_search_text) {
+                $custom_search_post['search'] = $_GET_search_text;
+            }
+            if ($tax_query) {
+                $custom_search_post['tax_query'] = $tax_query;
+            }
+            if ($meta_query) {
+                $custom_search_post['meta_query'] = $meta_query;
+            }
+            $custom_search_post['relation'] =  $field_relation;
+            $custom_search_post['sort_order_by'] =  $sort_order_by;
+            $query->set('csf_posts', $custom_search_post);
+        }
+        // filter sort by
+        if (isset($sort_order_by['order'])) {
+            $query->set('order', $sort_order_by['order']);
+            $query->set('orderby', $sort_order_by['orderby']);
+            if (isset($sort_order_by['meta_key'])) {
+                $query->set('meta_key', $sort_order_by['meta_key']);
+            }
+        } else {
+            // default filter sort by
+            if (
+                isset($default_asc_desc_sort_by['order']) &&
+                isset($default_asc_desc_sort_by['orderby'])
+            ) {
+                $query->set('order', $default_asc_desc_sort_by['order']);
+                $query->set('orderby', $default_asc_desc_sort_by['orderby']);
+                if (isset($default_asc_desc_sort_by['meta_key'])) {
+                    $query->set('meta_key', $default_asc_desc_sort_by['meta_key']);
                 }
-                if ($tax_query) {
-                    $tax_query['relation'] = $field_relation;
-                    $query->set('tax_query', $tax_query);
-                }
-                if ($meta_query) {
-                    $meta_query['relation'] = $field_relation;
-                    $query->set('meta_query', $meta_query);
-                }
-                if (isset($sort_order_by['order'])) {
-                    $query->set('orderby', $sort_order_by['orderby']);
-                    $query->set('order', $sort_order_by['order']);
-                }
-            } else {
-                // set custom_search_post
-                if ($tax_query) {
-                    $custom_search_post['tax_query'] = $tax_query;
-                }
-                if ($meta_query) {
-                    $custom_search_post['meta_query'] = $meta_query;
-                }
-                $custom_search_post['relation'] =  $field_relation;
-                $custom_search_post['sort_order_by'] =  $sort_order_by;
-                $query->set('csf_posts', $custom_search_post);
             }
         }
 

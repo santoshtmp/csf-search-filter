@@ -6,7 +6,7 @@ Plugin Name: CSF - Search Filter
 Description: CSF - Search Filter library plugin purpose to make search filter easier for admin and developer by providing form and query it.
 Plugin URI: https://github.com/santoshtmp/csf-search-filter
 Tags: CSF, search, form, query
-Version: 1.0
+Version: 1.1
 Author: santoshtmp
 Author URI: https://github.com/santoshtmp
 Requires WP: 6.0
@@ -42,6 +42,8 @@ require_once csf_dir . 'classes/csf_form.php';
 require_once csf_dir . 'classes/csf_query.php';
 require_once csf_dir . 'classes/enqueue_script.php';
 require_once csf_dir . 'classes/shortcode.php';
+require_once csf_dir . 'includes/functions.php';
+
 // csf main class
 class CSF
 {
@@ -49,8 +51,8 @@ class CSF
     {
         // execute the csf .
         $search_filter_query = new \csf_search_filter\CSF_Query();
-        $csf_table = new \csf_search_filter\CSF_Admin_setting();
-        $csf_table = new \csf_search_filter\CSF_Data();
+        $csf_admin_settings = new \csf_search_filter\CSF_Admin_setting();
+        $csf_data = new \csf_search_filter\CSF_Data();
         $csf_shortcode = new \csf_search_filter\CSF_shortcode();
         $csf_enqueue = new \csf_search_filter\CSF_Enqueue();
     }

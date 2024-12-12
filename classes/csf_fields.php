@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.0
+ * Version: 1.1
  * =======================================
  */
 
@@ -45,6 +45,7 @@ class CSF_Fields
      * display_count => 1 or 0; OPTIONAL; default 0
      * result_filter_area => ''; // OPTIONAL; html id where result template is shown 
      * dynamic_filter_item=> true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.
+     * default_asc_desc_sort_by = [ "order"=>"ASC", "orderby"=>"", "meta_key"=>""]; OPTIONAL
      * result_template=>'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme
      * fields => []; // filter fields lists and its fields values as defined below.
      * fields_actions =>[] // Search filter action like auto submit, submit and reset button
@@ -55,7 +56,7 @@ class CSF_Fields
      * display_name=>'Display name'
      * filter_term_type => 'taxonomy' or 'metadata'
      * filter_term_key => 'taxonomy_key' or 'metadata_key'; [if single meta_key has multiple metavalue in case of repeater metavalue:: example metakey_{array}_metakey]
-     * metadata_reference => 'asc_desc_sort_by', 'past_upcoming_date_compare', 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; This reference only apply to filter_term_key = metadata_key, For 'asc_desc_sort_by' filter_items must be provided with slug 'ASC' and 'DESC' also it can be used only once in one form., For 'past_upcoming_date_compare' filter_items must be provided with slug 'past' and 'upcoming' ,For 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value, For 'post' it will give post name where metadata_key must return post id.
+     * metadata_reference => 'asc_desc_sort_by,meta_key', 'past_upcoming_date_compare', 'taxonomy,taxonomy_key,slug' or 'post' or 'function-name-as-defined'; This reference only apply to filter_term_key = metadata_key, For 'asc_desc_sort_by,meta_key' filter_items must be provided with slug 'ASC' and 'DESC' also it can be used only once in one form, meta_key is the custom_meta_key and filter_term_key is orderby value., For 'past_upcoming_date_compare' filter_items must be provided with slug 'past' and 'upcoming' ,For 'taxonomy,taxonomy_key,slug' third parameter 'slug' define that wp query will perform meta query on given value, For 'post' it will give post name where metadata_key must return post id.
      * search_field_type => 'dropdown' or 'checkbox' or 'search_text' or 'radio'; there can only be one 'search_text' on each filter
      * placeholder => 'free text' ;only apply to search_field_type search_text
      * filter_items=> [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; If this is defined, it will replace the filter items.
@@ -202,9 +203,15 @@ class CSF_Fields
         $filter_fields['display_count'] = 0;
         $filter_fields['result_filter_area'] = ''; // section html id
         $filter_fields['dynamic_filter_item'] = true;
+        $filter_fields['default_asc_desc_sort_by'] = [
+            'order' => 'DESC',
+            'orderby' => 'date',
+            // 'meta_key' => 'end_date_and_time'
+        ];
+
         $filter_fields['fields_actions']  = [
-            'auto_submit' => true,
-            'submit_btn_show' => false,
+            'auto_submit' => false,
+            'submit_btn_show' => true,
             'submit_display_name' => 'Search',
             'reset_btn_show' => true,
             'reset_display_name' => 'Reset'
@@ -214,6 +221,7 @@ class CSF_Fields
             ['display_name' => 'Service Area', 'filter_term_type' => 'metadata', 'filter_term_key' => 'related_service_area', 'metadata_reference' => 'post', 'search_field_type' => 'checkbox'],
             ['display_name' => 'Event Type', 'filter_term_type' => 'metadata', 'filter_items' => $filter_items_date, 'filter_term_key' => 'end_date_and_time', 'metadata_reference' => 'past_upcoming_date_compare', 'search_field_type' => 'radio'],
             ['display_name' => 'Sort By Title', 'filter_term_type' => 'metadata', 'filter_term_key' => 'title', 'metadata_reference' => 'asc_desc_sort_by', 'search_field_type' => 'dropdown'],
+            // ['display_name' => 'Sort By End date', 'filter_term_type' => 'metadata', 'filter_term_key' => 'meta_value', 'metadata_reference' => 'asc_desc_sort_by,end_date_and_time', 'search_field_type' => 'dropdown'],
         ];
         return [
             $filter_fields_name => $filter_fields
