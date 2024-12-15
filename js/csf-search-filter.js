@@ -60,11 +60,11 @@ jQuery(function ($) {
             // update search url
             // window.history.replaceState('', 'url', submission_link);
             // update csf result number
-            let search_number_info = htmlDoc.find('#search-number-info').html();
+            let search_number_info = htmlDoc.find('#csf-get-result-info').html();
             if (search_number_info) {
-              $('#search-number-info').html(search_number_info);
+              $('#csf-get-result-info').html(search_number_info);
             } else {
-              $('#search-number-info').html('');
+              $('#csf-get-result-info').html('');
             }
             //
             request.filter_area = true;
@@ -91,7 +91,6 @@ jQuery(function ($) {
   csf_filter_form_ids.forEach(function (csf_filter_form_id, index) {
     filter_form = $('form#' + csf_filter_form_id);
     // var filter_rest_btn = $('form#' + csf_filter_form_id + ' .filter-reset-btn button');
-    var csf_result_area_id = filter_form.attr('result-area-id');
     // filter_form.on('submit', function (e) {
     //     e.stopPropagation();
     //     var req = get_XMLHttpRequest_Data(csf_result_area_id, filter_form);
@@ -99,16 +98,12 @@ jQuery(function ($) {
     // });
     $(document).on('submit', 'form#' + csf_filter_form_id, function (e) {
       e.stopPropagation();
+      var csf_result_area_id = filter_form.attr('result-area-id');
       var req = get_XMLHttpRequest_Data(csf_result_area_id, filter_form);
       return false;
     });
 
-    // $('#' + csf_filter_form_id + ' select').on('change', function (e) {
-    //     filter_form.trigger('submit');
-    // });
-    // $('#' + csf_filter_form_id + ' input[type="checkbox"]').on('change', function () {
-    //     filter_form.trigger('submit');
-    // });
+    // on change in filter item make form submit
     $(document).on(
       'change',
       '#' + csf_filter_form_id + ' select, #' + csf_filter_form_id + ' input[type="radio"], #' + csf_filter_form_id + ' input[type="checkbox"]',
@@ -124,6 +119,7 @@ jQuery(function ($) {
       e.stopPropagation();
       setTimeout(() => {
         change_filte_item_id = '';
+        csf_result_area_id = filter_form.attr('result-area-id');
         get_XMLHttpRequest_Data(csf_result_area_id, filter_form, filter_form.attr('data-url'));
       }, 100);
     });
@@ -135,6 +131,7 @@ jQuery(function ($) {
 
     // Pagination filter
     $(document).on('click', '.pagination a', function (e) {
+      e.preventDefault();
       e.stopPropagation();
       $(window).scrollTop(0);
       var pagination_link = $(this).attr('href');

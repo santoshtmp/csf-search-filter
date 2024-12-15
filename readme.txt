@@ -40,6 +40,9 @@ Yes, we can apply to only selected post type.
 == Changelog ==
 = 1.0.0 =
 * Initial release.
+= 1.1.0 =
+* Added filter form changes on filter action.
+* Added filter result info with filter form
 
 == Upgrade Notice ==
 = 1.0.0 =
@@ -153,3 +156,6 @@ $search_form = [
 \csf_search_filter\CSF_Form::the_search_filter_form($search_form);
 OR 
 echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" post_type = "post_type" ]');
+
+## ===== CSF Form Result info =====
+echo do_shortcode([csf_get_result_info filter_text=true other_filter=false]);

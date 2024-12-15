@@ -152,6 +152,7 @@ class CSF_Admin_setting
                                 "order": "DESC",
                                 "orderby": "date"
                             }
+                            "show_result_info": 1,
                             "fields":[
                                 {
                                     "display_name": "Region",
@@ -208,6 +209,8 @@ class CSF_Admin_setting
                     <li>csf_search_filter['unique_filter_name']['result_template'] => 'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme;</li>
                     <li> csf_search_filter['unique_filter_name']['dynamic_filter_item'] = true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.</li>
                     <li> csf_search_filter['unique_filter_name']['default_asc_desc_sort_by'] = [ "order"=>"ASC", "orderby"=>"", "meta_key"=>""]; OPTIONAL.</li>
+                    <li> csf_search_filter['unique_filter_name']['show_result_info'] = 0, 1, or 2; ; OPTIONAL; default 1; to show filter result info; 0 = false, 1= show text other hide, 2 show all.</li>
+                    <li> csf_search_filter['unique_filter_name']['display_count_selected'] => 1 or 0; OPTIONAL; default 1; applied only for "search_field_type =checkbox" </li>
                     <li>
                         csf_search_filter['unique_filter_name']['fields'] = Each filter fields values has following options
                         <ol>
@@ -277,6 +280,7 @@ class CSF_Admin_setting
                     <li> $search_form['post_type'] 'post_type'; default current_post_type</li>
                     <li> $search_form['data_url'] = 'data_action_url'; default current_post_archive_url </li>
                     <li> $search_form['all_post_ids'] = array of specific post ids to query and filter. ;default empty array [].</li>
+
                 </ol>
             </div>
             <div id="csf_result_display_help_desc" class="help-info" style="display: none; ">
@@ -292,6 +296,11 @@ class CSF_Admin_setting
                     <br>
                     For the result template csf query result is stored in variable $csf_query.
                 </p>
+
+                <pre>
+                <h4>CSF Filter Result Short info</h4>
+                echo do_shortcode([csf_get_result_info filter_text=true other_filter=false]);
+                </pre>
             </div>
         </div>
         <div id="csf_set_search_fields_editor"><?php echo esc_attr(($value) ? $value : ''); ?></div>

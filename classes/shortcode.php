@@ -12,7 +12,6 @@
 
 namespace csf_search_filter;
 
-use stdClass;
 use WP_Query;
 
 if (!defined('ABSPATH')) {
@@ -24,6 +23,7 @@ class CSF_shortcode
     public function __construct()
     {
         add_shortcode('csf_searchfilter', [$this, 'display_shortcode_csf_searchfilter']);
+        add_shortcode('csf_get_result_info', [$this, 'display_shortcode_csf_get_result_info']);
     }
 
 
@@ -110,6 +110,25 @@ class CSF_shortcode
             echo "</div> ";
         }
         wp_reset_postdata();
+    }
+
+    // [csf_get_result_info filter_text=true filter_other=false]
+    public function display_shortcode_csf_get_result_info($atts)
+    {
+        global $csf_result_info;
+
+        // Define default attributes
+        $atts = shortcode_atts(
+            array(
+                'filter_text' => true,
+                'filter_other' => false
+            ),
+            $atts
+        );
+        $csf_result_info['filter_text'] = $atts['filter_text'];
+        $csf_result_info['filter_other'] = $atts['filter_other'];
+
+        echo \csf_search_filter\CSF_Form::csf_get_result_info($csf_result_info);
     }
 
     // class end

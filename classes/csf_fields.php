@@ -50,6 +50,8 @@ class CSF_Fields
      * fields => []; // filter fields lists and its fields values as defined below.
      * fields_actions =>[] // Search filter action like auto submit, submit and reset button
      * free_search=>[] // define the meta_key and taxonomy to accept free text search; free_search will only work with field_relation="OR"
+     * show_result_info=> 0, 1, or 2; ; OPTIONAL; default 1; to show filter result info; 0 = false, 1= show text other hide, 2 show all.
+     * display_count_selected => 1 or 0; OPTIONAL; default 1; applied only for "search_field_type =checkbox" 
      * ------------------------------------------------------------------
      * Each filter "fields" values has following options $fields['unique_filter_name']['fields']
      * ------------------------------------------------------------------

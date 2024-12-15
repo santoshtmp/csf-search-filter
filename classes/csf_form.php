@@ -60,8 +60,10 @@ class CSF_Form
         }
         $search_filter_title = (isset($fields_settings['search_filter_title'])) ? $fields_settings['search_filter_title'] : 'Filters';
         $display_count = (isset($fields_settings['display_count'])) ? $fields_settings['display_count'] : 0;
+        $display_count_selected = (isset($fields_settings['display_count_selected'])) ? $fields_settings['display_count_selected'] : 1;
         $result_filter_area = (isset($fields_settings['result_filter_area'])) ? $fields_settings['result_filter_area'] : '';
         $dynamic_filter_item = (isset($fields_settings['dynamic_filter_item'])) ? $fields_settings['dynamic_filter_item'] : false;
+        $show_result_info = (isset($fields_settings['show_result_info'])) ? $fields_settings['show_result_info'] : 1;
         $fields_actions = isset($fields_settings['fields_actions']) ? $fields_settings['fields_actions'] : '';
         $fields = isset($fields_settings['fields']) ? $fields_settings['fields'] : [];
         // 
@@ -138,7 +140,7 @@ class CSF_Form
                         }
                     }
                     if ($search_field_type == 'checkbox') {
-                        $checkbox_get_value = \csf_search_filter\CSF_Form::checkbox_field($form_id, $filter_title, $field_name, $filter_items, $display_count);
+                        $checkbox_get_value = \csf_search_filter\CSF_Form::checkbox_field($form_id, $filter_title, $field_name, $filter_items, $display_count, $display_count_selected);
                         if (!$has_checkbox_get_value) {
                             $has_checkbox_get_value = $checkbox_get_value;
                         }
@@ -195,6 +197,20 @@ class CSF_Form
                 }
                 ?>
             </form>
+            <?php
+            global $csf_result_info;
+            $csf_result_info['filter_text'] = false;
+            $csf_result_info['filter_other'] = false;
+            if ($show_result_info == '1') {
+                $csf_result_info['filter_text'] = true;
+                $csf_result_info['filter_other'] = false;
+            } else  if ($show_result_info == '2') {
+                $csf_result_info['filter_text'] = true;
+                $csf_result_info['filter_other'] = true;
+            }
+
+            echo self::csf_get_result_info($csf_result_info);
+            ?>
         </div>
     <?php
     }
@@ -269,7 +285,7 @@ class CSF_Form
     }
 
     // form checkbox_field field
-    public static function checkbox_field($form_id, $filter_title, $field_name, $filter_items, $show_count = 0)
+    public static function checkbox_field($form_id, $filter_title, $field_name, $filter_items, $show_count = 0, $display_count_selected = 0)
     {
         $active_filter = isset($_GET['active_filter']) ? $_GET['active_filter'] : '';
         $select_checkbox = isset($_GET[$field_name]) ? $_GET[$field_name] : [];
@@ -288,7 +304,15 @@ class CSF_Form
         <div class="filter-block checkbox-field <?php echo esc_attr($filter_active_class); ?>">
             <div class="filter-title <?php echo esc_attr($filter_active_class); ?>">
                 <div class='title flex gap-x-1.5 items-center'>
-                    <?php echo esc_attr($filter_title); ?>
+                    <?php
+                    echo esc_attr($filter_title);
+                    if ($select_checkbox && $display_count_selected) {
+                    ?>
+                        <span class="count-selected">
+                            <?php echo esc_attr(count($select_checkbox)); ?>
+                        </span>
+                    <?php
+                    } ?>
                 </div>
             </div>
             <div class="filter-item-list-wrapper ">
@@ -404,8 +428,59 @@ class CSF_Form
                 ?>
             </div>
         </div>
-<?php
+        <?php
         return $select_radio;
+    }
+
+    /**
+     * 
+     */
+    public static function csf_get_result_info($csf_result_info)
+    {
+        $filter_text = isset($csf_result_info['filter_text']) ? boolval($csf_result_info['filter_text']) : false;
+        $filter_other = isset($csf_result_info['filter_other']) ? boolval($csf_result_info['filter_other']) : false;
+
+        if (!$filter_text && !$filter_other) {
+            return '';
+        }
+
+        ob_start();
+        echo "<div id='csf-get-result-info' class = 'filter-result-info'>";
+        if (isset($csf_result_info['search_text']) && $csf_result_info['search_text'] && $filter_text) {
+        ?>
+            <p class="filter-text">
+                Search results for
+                <span class="filter-text-value">
+                    <?php echo $csf_result_info['search_text']; ?>
+                </span>
+            </p>
+            <?php
+        }
+        if (isset($csf_result_info['other_filter']) && $csf_result_info['other_filter'] && $filter_other) {
+            foreach ($csf_result_info['other_filter'] as $other_filter_name => $other_filter_values) {
+            ?>
+                <div class="search-filter-values">
+                    <div class="filter-title">
+                        <?php echo $other_filter_name; ?>
+                    </div>
+                    <div class="filter-value">
+                        <?php
+                        if (is_string($other_filter_values)) {
+                            echo "<span>" . $other_filter_values . "</span>";
+                        } else if (is_array($other_filter_values)) {
+                            foreach ($other_filter_values as $key => $value) {
+                                echo "<span>" . $value . "</span>";
+                            }
+                        } ?>
+                    </div>
+                </div>
+<?php
+            }
+        }
+        echo "</div>";
+        $output = ob_get_contents();
+        ob_end_clean();
+        return $output;
     }
 
     // SF_Form class end

@@ -62,7 +62,7 @@ class CSF_Query
                     $default_post_page
                 ) {
                     $search_fields = \csf_search_filter\CSF_Fields::set_search_fields();
-                    $setting_key = '';
+                    $setting_key = [];
                     foreach ($search_fields as $key => $settings) {
                         // 
                         if (isset($settings['is_main_query'])) {
@@ -75,8 +75,8 @@ class CSF_Query
                         // 
                         if (isset($settings['post_type']) && $query_post_type) {
                             if ($settings['post_type'] == $query_post_type) {
-                                $setting_key = $key;
-                                break;
+                                $setting_key[] = $key;
+                                // break;
                             }
                         }
                         // 
@@ -84,22 +84,21 @@ class CSF_Query
                             $taxonomies = explode(',', $settings['taxonomies']);
                             foreach ($taxonomies as $taxonomies_key => $value) {
                                 if ($value == $query_taxonomy) {
-                                    $setting_key = $key;
-                                    break;
+                                    $setting_key[] = $key;
+                                    // break;
                                 }
                             }
                         }
-                        if ($setting_key) {
-                            break;
+                    }
+                    // 
+                    foreach ($setting_key as $key => $csf_uniqu_key) {
+                        $fields_settings = (isset($search_fields[$csf_uniqu_key])) ? $search_fields[$csf_uniqu_key] : '';
+                        if ($fields_settings && $csf_uniqu_key) {
+                            $this->csf_query($fields_settings, $query);
                         }
                     }
 
-                    $fields_settings = (isset($search_fields[$setting_key])) ? $search_fields[$setting_key] : '';
-                    if (!$fields_settings || !$setting_key) {
-                        return;
-                    }
-
-                    return $this->csf_query($fields_settings, $query);
+                    return true;
                 }
             }
         }
@@ -122,14 +121,14 @@ class CSF_Query
         // if (!isset($_GET['_csf_nonce']) || !wp_verify_nonce($_GET['_csf_nonce'], 'csf_nonce')) {
         //     return '';
         // }
-
+        global $csf_result_info;
         $_GET_search_text = '';
         $tax_query =  [];
         $meta_query = [];
         $sort_order_by = [];
 
         // post per page 
-        $posts_per_page = (isset($fields_settings['posts_per_page'])) ? $fields_settings['posts_per_page'] : 12;
+        $posts_per_page = (isset($fields_settings['posts_per_page'])) ? $fields_settings['posts_per_page'] : '';
         if ($posts_per_page) {
             $query->set('posts_per_page', $posts_per_page);
         }
@@ -152,6 +151,7 @@ class CSF_Query
                 if ($search_field_type === 'search_text') {
                     $_GET_search_text = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
                     if ($_GET_search_text) {
+                        $csf_result_info['search_text'] = $_GET_search_text;
                         // other free_search
                         $free_search = (isset($fields_settings['free_search'])) ? $fields_settings['free_search'] : false;
                         if ($free_search && ($field_relation == "OR")) {
@@ -208,6 +208,9 @@ class CSF_Query
                 // get name and its value
                 $field_name = \csf_search_filter\CSF_Form::get_search_field_name($filter_title);
                 $_GET_field_name_val = isset($_GET[$field_name]) ? $_GET[$field_name] : '';
+                if ($_GET_field_name_val) {
+                    $csf_result_info['other_filter'][$filter_title] = $_GET_field_name_val;
+                }
                 $meta_query_compare = 'LIKE';
                 $meta_query_type = '';
 
@@ -389,11 +392,11 @@ class CSF_Query
     // 
     public static function tax_filter_query($taxonomy, $terms_slug)
     {
-        return array(
+        return [
             'taxonomy' => $taxonomy,
             'field' => 'slug',
             'terms' => $terms_slug,
-        );
+        ];
     }
 
 
