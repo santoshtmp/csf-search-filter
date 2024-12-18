@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 class CSF_Enqueue
 {
     // 
-    public static function csf_search_js($form_id = ['csf-filter-form'], $filter_name = '', $invalid_csf_value = false)
+    public static function csf_search_js($form_id = ['csf-filter-form'], $filter_name = '')
     {
         $js_file_path = 'csf-search-filter/js/csf-search-filter.js';
         try {
@@ -38,9 +38,7 @@ class CSF_Enqueue
         );
         wp_localize_script('csf-filter', 'csf_obj', [
             'form_ids' => wp_json_encode($form_id),
-            // 'ajaxUrl' => admin_url('admin-ajax.php'),
             'filter_name' => $filter_name,
-            'invalid_csf_value' => $invalid_csf_value
         ]);
     }
 

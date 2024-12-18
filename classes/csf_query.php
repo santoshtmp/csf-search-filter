@@ -483,6 +483,14 @@ class CSF_Query
             }
         }
 
+        // https://www.advancedcustomfields.com/resources/query-posts-custom-fields/
+        if (str_contains($where, "{array}")) {
+            // Replace '=' before {array} with 'LIKE' dynamically
+            $where = preg_replace("/= '(.*?)_{array}(.*?)'/", "LIKE '$1_%$2'", $where);
+            // Replace {array} with '%'
+            $where = str_replace('{array}', '%', $where);
+        }
+
         return $where;
     }
 

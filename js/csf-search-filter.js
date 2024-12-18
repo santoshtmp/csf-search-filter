@@ -124,11 +124,6 @@ jQuery(function ($) {
       }, 100);
     });
 
-    // invalid field values provided
-    if (csf_obj.invalid_csf_value) {
-      $('#' + csf_result_area_id).append(' <p>Invalid search filter value is provided.  </p> ');
-    }
-
     // Pagination filter
     $(document).on('click', '.pagination a', function (e) {
       e.preventDefault();

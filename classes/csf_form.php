@@ -31,8 +31,6 @@ class CSF_Form
     public static function the_search_filter_form($search_form = [])
     {
         global $wp;
-        global $invalid_csf_value;
-        $invalid_csf_value = false;
         // get search filter form args
         $filter_name = (isset($search_form['filter_name'])) ? $search_form['filter_name'] : '';
         $post_type = (isset($search_form['post_type'])) ? $search_form['post_type'] : '';
@@ -158,7 +156,7 @@ class CSF_Form
 
                     $auto_submit = isset($fields_actions['auto_submit']) ? $fields_actions['auto_submit'] : true;
                     if ($auto_submit) {
-                        \csf_search_filter\CSF_Enqueue::csf_search_js(self::$form_ids, $filter_name, $invalid_csf_value);
+                        \csf_search_filter\CSF_Enqueue::csf_search_js(self::$form_ids, $filter_name);
                     }
                     // 
                     $submit_btn_show = isset($fields_actions['submit_btn_show']) ? $fields_actions['submit_btn_show'] : false;
@@ -291,10 +289,6 @@ class CSF_Form
         $select_checkbox = isset($_GET[$field_name]) ? $_GET[$field_name] : [];
         $active_filter = ($active_filter == $field_name) ? 'active' : '';
         $filter_active_class = ($select_checkbox) ? 'active' : $active_filter;
-        if ($select_checkbox && !$filter_items) {
-            global $invalid_csf_value;
-            $invalid_csf_value = true;
-        }
         if (!$filter_items) {
             return $select_checkbox;
         }
@@ -328,7 +322,7 @@ class CSF_Form
                     if (is_array($select_checkbox) && in_array($value['slug'], $select_checkbox)) {
                         $checkbox_checked = 'checked';
                     }
-                    $unique_filter_item_name = $field_name . '-' . $value['slug']
+                    $unique_filter_item_name = $field_name . '-' . str_replace([' '], '-', $value['slug']);
                 ?>
                     <div class="filter-item filter-checkbox-wrapper" item-type="<?php echo esc_attr($unique_filter_item_name); ?>">
 
@@ -369,10 +363,6 @@ class CSF_Form
         $select_radio = isset($_GET[$field_name]) ? $_GET[$field_name] : '';
         $active_filter = ($active_filter == $field_name) ? 'active' : '';
         $filter_active_class = ($select_radio) ? 'active' : $active_filter;
-        if ($select_radio && !$filter_items) {
-            global $invalid_csf_value;
-            $invalid_csf_value = true;
-        }
         if (!$filter_items) {
             return $select_radio;
         }

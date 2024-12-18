@@ -10,6 +10,8 @@
 
 namespace csf_search_filter;
 
+use WP_Query;
+
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
@@ -58,9 +60,17 @@ class CSF_Data
                     $post_args['tax_query'] = isset($wp_query_vars['tax_query']) ? $wp_query_vars['tax_query'] : [];
                 }
                 // get all post from given post type and retrive given meta-key values
-                $posts = get_posts($post_args);
-                foreach ($posts as $key => $post) {
-                    $meta_info = self::check_post_meta_info($post->ID,  $each_meta_key, $each_metadata_reference, $meta_info, false);
+                // $posts = get_posts($post_args);
+                $post_query = new WP_Query($post_args);
+                if ($post_query->have_posts()) {
+                    while ($post_query->have_posts()) {
+                        $post_query->the_post();
+                        $post_id = get_the_ID();
+                        // foreach ($posts as $key => $post) {
+                        // $post_id = $post->ID;
+                        $meta_info = self::check_post_meta_info($post_id,  $each_meta_key, $each_metadata_reference, $meta_info, false);
+                    }
+                    wp_reset_postdata();
                 }
             }
         }
@@ -205,7 +215,13 @@ class CSF_Data
                         $meta_query
                     ]
                 ];
-                $posts_count = count(get_posts($post_args));
+                $posts_count = 0;
+                // $posts_count = count(get_posts($post_args));
+                $post_query = new WP_Query($post_args);
+                if ($post_query->have_posts()) {
+                    $posts_count = $post_query->found_posts;
+                    wp_reset_postdata();
+                }
             }
             $filter_items[$key]['count'] = $posts_count;
         }
