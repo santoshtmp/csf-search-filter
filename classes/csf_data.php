@@ -122,10 +122,12 @@ class CSF_Data
         $meta_val_slug = $meta_val_name = $meta_val;
         if ($metadata_reference) {
             $reference = self::check_metadata_reference($meta_val, $metadata_reference);
-            $meta_val_term_id = $reference['meta_val_term_id'];
-            $meta_val_name = $reference['meta_val_name'];
-            $meta_val_slug = $reference['meta_val_slug'];
-            $meta_val_parent = $reference['meta_val_parent'];
+            if ($reference) {
+                $meta_val_term_id = $reference['meta_val_term_id'];
+                $meta_val_name = $reference['meta_val_name'];
+                $meta_val_slug = $reference['meta_val_slug'];
+                $meta_val_parent = $reference['meta_val_parent'];
+            }
         }
         if ($return_field_term_id) {
             $meta_info[$meta_val] = $meta_val_term_id;
@@ -168,7 +170,7 @@ class CSF_Data
                         $current_term = get_term_by('slug', $meta_val, $metadata_reference[1]);
                     }
                 }
-                if ($current_term) {
+                if ($current_term && isset($current_term->slug)) {
                     $meta_val_name = $current_term->name;
                     $meta_val_slug = $current_term->slug;
                     $meta_val_parent = $current_term->parent;
