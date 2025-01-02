@@ -256,7 +256,20 @@ class CSF_Query
                                             unset($_GET_field_name_val_temp);
                                         }
                                     }
-                                    if ($search_field_type == 'dropdown') {
+                                    if ($search_field_type == 'dropdown' || $search_field_type == 'radio') {
+                                        if ($search_field_type == 'radio') {
+                                            $radio_always_active = (isset($field['radio_always_active'])) ? $field['radio_always_active'] : false;
+                                            if ($radio_always_active && ! $_GET_field_name_val) {
+                                                $dynamic_filter_item = (isset($field['dynamic_filter_item'])) ? $field['dynamic_filter_item'] : false;
+                                                $radio_metadata_reference = (isset($field['metadata_reference'])) ? $field['metadata_reference'] : '';
+                                                $filter_items = \csf_search_filter\CSF_Data::get_csf_metadata($post_type, $filter_term_key, $radio_metadata_reference, $dynamic_filter_item);
+                                                foreach ($filter_items  as $key => $value) {
+                                                    $_GET_field_name_val =  $value['slug'];
+                                                    break;
+                                                }
+                                            }
+                                        }
+
                                         $current_term = get_term_by('slug', $_GET_field_name_val, $taxonomy);
                                         if ($current_term) {
                                             $_GET_field_name_val = $current_term->term_id;

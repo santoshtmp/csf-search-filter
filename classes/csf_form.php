@@ -64,6 +64,25 @@ class CSF_Form
         $show_result_info = (isset($fields_settings['show_result_info'])) ? $fields_settings['show_result_info'] : 1;
         $fields_actions = isset($fields_settings['fields_actions']) ? $fields_settings['fields_actions'] : '';
         $fields = isset($fields_settings['fields']) ? $fields_settings['fields'] : [];
+        $taxonomies = (isset($fields_settings['taxonomies'])) ? $fields_settings['taxonomies'] : '';
+        // 
+        if (is_tax()) {
+            if (! $taxonomies) {
+                return;
+            }
+            $taxonomies = explode(',', $taxonomies);
+            $queried_object = get_queried_object();
+            if (!in_array($queried_object->taxonomy, $taxonomies)) {
+                return;
+            }
+        }
+        if (!is_archive()) {
+            // $is_main_query = (isset($fields_settings['is_main_query'])) ? $fields_settings['is_main_query'] : true;
+            $search_form_data_url = (isset($search_form['data_url'])) ? $search_form['data_url'] : '';
+            if (!$search_form_data_url) {
+                return;
+            }
+        }
         // 
         $filter_name_short = str_replace([' '], '-', strtolower($filter_name));
         $form_id = 'csf-filter-' . $filter_name_short;
@@ -144,7 +163,8 @@ class CSF_Form
                         }
                     }
                     if ($search_field_type == 'radio') {
-                        $radio_get_value = \csf_search_filter\CSF_Form::radio_field($form_id, $filter_title, $field_name, $filter_items, $display_count);
+                        $radio_always_active = (isset($field['radio_always_active'])) ? $field['radio_always_active'] : false;
+                        $radio_get_value = \csf_search_filter\CSF_Form::radio_field($form_id, $filter_title, $field_name, $filter_items, $display_count, $radio_always_active);
                         if (!$has_radio_get_value) {
                             $has_radio_get_value = $radio_get_value;
                         }
@@ -223,10 +243,13 @@ class CSF_Form
     // form free search text area
     public static function search_text_field($field)
     {
-        $search = isset($_GET['search']) ? $_GET['search'] : ''; ?>
+        global $csf_result_info;
+        $search_name = isset($field['search_name']) ? $field['search_name'] : 'search';
+        $search = isset($_GET[$search_name]) ? $_GET[$search_name] : '';
+        $csf_result_info['search_text'] = $search; ?>
         <div class="filter-block search-box">
             <div class="input-wrapper relative" filter-action='free-search'>
-                <input type="text" id="search_input" class='search-input w-full' maxlength="100" name="search"
+                <input type="text" id="search_input" class='search-input w-full' maxlength="100" name="<?php echo $search_name; ?>"
                     value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr($field['placeholder']); ?>">
                 <span class='search-icon top-1/2 absolute right-4 '>
 
@@ -357,7 +380,7 @@ class CSF_Form
     }
 
     // form radio_field field
-    public static function radio_field($form_id, $filter_title, $field_name, $filter_items, $show_count = 0)
+    public static function radio_field($form_id, $filter_title, $field_name, $filter_items, $show_count = 0, $radio_always_active = false)
     {
         $active_filter = isset($_GET['active_filter']) ? $_GET['active_filter'] : '';
         $select_radio = isset($_GET[$field_name]) ? $_GET[$field_name] : '';
@@ -387,6 +410,9 @@ class CSF_Form
                     $radio_checked = '';
                     if (isset($value['slug'])) {
                         $radio_checked =  ($select_radio == $value['slug']) ? 'checked' : '';
+                    }
+                    if ($radio_always_active && $each_key === 0 && !$radio_checked && !$select_radio) {
+                        $radio_checked = 'checked';
                     }
                     $unique_filter_item_name = $field_name . '-' . $value['slug']
                 ?>
