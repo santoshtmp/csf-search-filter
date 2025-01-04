@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.1
+ * Version: 1.2
  * =======================================
  */
 
@@ -144,7 +144,7 @@ class CSF_Admin_setting
                             "posts_per_page":12,
                             "search_filter_title":"Text Title",
                             "display_count":1
-                            "result_filter_area":"",
+                            "result_filter_area":"output-filter",
                             "field_relation":"OR",
                             "result_template":"",
                             "dynamic_filter_item":true,
@@ -181,6 +181,53 @@ class CSF_Admin_setting
                             },
                         }   
                     }</pre>
+
+                <pre>
+// Add filter fields for "event" archive page Filter using hook "set_csf_search_fields"
+add_filter('set_csf_search_fields', 'event_filter_fields');
+function event_filter_fields($csf_filters)
+{
+    $filter_fields = $csf_filters['csf_unique_default_filter_name'];
+    // 
+    $filter_fields['post_type'] = 'event'; // post type to filter
+    // Update post archive page Filter
+    $filter_items_date = [
+        [
+            'slug' => 'upcoming',
+            'name' => 'Upcoming Events'
+        ],
+        [
+            'slug' => 'past',
+            'name' => 'Past Events'
+        ],
+    ];
+    $filter_fields['fields'] = [
+        [
+            'display_name' => '',
+            'search_field_type' => 'search_text',
+            'placeholder' => 'Search by keyword'
+        ],
+        [
+            'display_name' => 'Event Type',
+            'filter_term_type' => 'metadata',
+            'filter_items' => $filter_items_date,
+            'filter_term_key' => 'start_date_and_time',
+            'metadata_reference' => 'past_upcoming_date_compare',
+            'search_field_type' => 'dropdown',
+            "hidden_field" => true
+        ],
+        [
+            'display_name' => 'Sort By Event End date',
+            'filter_term_type' => 'metadata',
+            'filter_term_key' => 'meta_value',
+            'metadata_reference' => 'asc_desc_sort_by,end_date_and_time',
+            'search_field_type' => 'dropdown'
+        ],
+    ];
+    $csf_filters['event'] = $filter_fields;
+    return $csf_filters;
+}
+                    </pre>
                 <ol>
                     <li>
                         csf_search_filter['unique_filter_name'] = Unique filter name. :: REQUIRED; Each Filter must have unique_filter_name
@@ -202,12 +249,13 @@ class CSF_Admin_setting
                     </li>
                     <li> csf_search_filter['unique_filter_name']['display_count'] => 1 or 0; OPTIONAL; default 0</li>
                     <li>
-                        csf_search_filter['unique_filter_name']['result_filter_area'] => ""; OPTIONAL; html section id, where the result is shown.
+                        csf_search_filter['unique_filter_name']['result_filter_area'] => "output-filter"; OPTIONAL; html section id, where the result is shown.
                     </li>
                     <li>csf_search_filter['unique_filter_name']['field_relation'] = "OR / AND"; default "OR"; OPTIONAL
                     </li>
                     <li>csf_search_filter['unique_filter_name']['result_template'] => 'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme;</li>
                     <li> csf_search_filter['unique_filter_name']['dynamic_filter_item'] = true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.</li>
+                    <li> csf_search_filter['unique_filter_name']['update_url'] = true or false; ; OPTIONAL; default false; // To change/update url on filter</li>
                     <li> csf_search_filter['unique_filter_name']['default_asc_desc_sort_by'] = [ "order"=>"ASC", "orderby"=>"", "meta_key"=>""]; OPTIONAL.</li>
                     <li> csf_search_filter['unique_filter_name']['show_result_info'] = 0, 1, or 2; ; OPTIONAL; default 1; to show filter result info; 0 = false, 1= show text other hide, 2 show all.</li>
                     <li> csf_search_filter['unique_filter_name']['display_count_selected'] => 1 or 0; OPTIONAL; default 1; applied only for "search_field_type =checkbox" </li>
@@ -228,6 +276,8 @@ class CSF_Admin_setting
                             </li>
                             <li>search_field_type => 'dropdown' or 'checkbox' or 'search_text' or "radio"; default dropdown; there can only be one 'search_text' on each filter</li>
                             <li>placeholder => 'free text' ;only apply to search_field_type search_text</li>
+                            <li>radio_always_active => => true or false; OPTIONAL; only applied to search_field_type===radio</li>
+                            <li>hidden_field =>true or false; ; OPTIONAL; default false; // To hide the field in filter form</li>
                             <li>filter_items => [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; OPTIONA; If this is defined, it will replace the filter items. </li>
                         </ol>
                     </li>
@@ -285,6 +335,7 @@ class CSF_Admin_setting
             </div>
             <div id="csf_result_display_help_desc" class="help-info" style="display: none; ">
                 <h4>CSF Filter Result Display Setting</h4>
+                <p>when applied is_main_query==true, then current query is applied and result is shown in current main query.</p>
                 <pre>
         echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" result_show="true"]');  
         OR  

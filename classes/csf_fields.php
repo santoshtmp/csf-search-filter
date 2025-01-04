@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.1
+ * Version: 1.2
  * =======================================
  */
 
@@ -43,8 +43,9 @@ class CSF_Fields
      * field_relation=>"AND" or "OR" ; Default "AND"
      * search_filter_title => ""; Search filter title in the search form
      * display_count => 1 or 0; OPTIONAL; default 0
-     * result_filter_area => ''; // OPTIONAL; html id where result template is shown 
+     * result_filter_area => 'output-filter'; // OPTIONAL; html id where result template is shown 
      * dynamic_filter_item=> true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.
+     * update_url=> true or false; ; OPTIONAL; default false; // To change/update url on filter
      * default_asc_desc_sort_by = [ "order"=>"ASC", "orderby"=>"", "meta_key"=>""]; OPTIONAL
      * result_template=>'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme
      * fields => []; // filter fields lists and its fields values as defined below.
@@ -62,6 +63,7 @@ class CSF_Fields
      * search_field_type => 'dropdown' or 'checkbox' or 'search_text' or 'radio'; there can only be one 'search_text' on each filter
      * placeholder => 'free text' ;only apply to search_field_type search_text
      * radio_always_active => true or false; OPTIONAL; only applied to search_field_type===radio
+     * hidden_field =>true or false; ; OPTIONAL; default false; // To hide the field in filter form
      * filter_items=> [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; If this is defined, it will replace the filter items.
      * ------------------------------------------------------------------
      * Each filter "fields_actions" values has following options $fields['unique_filter_name']['fields_actions']
@@ -79,13 +81,17 @@ class CSF_Fields
         // initially define the fields
 
         $fields = array_merge(
-            self::resource_filter_fields(),
-            self::application_tool_filter_fields(),
-            self::event_filter_fields(),
+            self::default_filter_fields(),
             self::search_page_filter_fields(),
+            // 
+            self::resource_filter_fields(),
         );
 
-        // return field settings
+        /**
+         * Allow other theme and plugiin to add filter fields
+         */
+        $fields = apply_filters('set_csf_search_fields', $fields);
+
         return $fields;
     }
 
@@ -95,32 +101,59 @@ class CSF_Fields
     protected static function default_filter_fields()
     {
         return [
-            'post_type' => 'post',
-            'is_main_query' => true,
-            'posts_per_page' => '',
-            'taxonomies' => '',
-            'search_filter_title' => '',
-            'field_relation' => 'AND',
-            'dynamic_filter_item' => true,
-            'result_filter_area' => 'output-filter',
-            'display_count' => 0,
-            'show_result_info' => 0,
-            'fields_actions' => [
-                'auto_submit' => true,
-                'submit_btn_show' => false,
-                'submit_display_name' => 'Search',
-                'reset_btn_show' => false,
-                'reset_display_name' => 'Reset'
-            ],
-            'default_asc_desc_sort_by' => [
-                'order' => 'DESC',
-                'orderby' => 'date',
-                // 'meta_key' => 'end_date_and_time'
-            ],
-            'fields' => [
-                ['display_name' => '', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
+            'csf_unique_default_filter_name' => [
+                'post_type' => 'post',
+                'is_main_query' => true,
+                'posts_per_page' => '',
+                'taxonomies' => '',
+                'search_filter_title' => '',
+                'field_relation' => 'AND',
+                'dynamic_filter_item' => false,
+                'update_url' => false,
+                'result_filter_area' => 'output-filter',
+                'display_count' => 0,
+                'show_result_info' => 0,
+                'fields_actions' => [
+                    'auto_submit' => true,
+                    'submit_btn_show' => false,
+                    'submit_display_name' => 'Search',
+                    'reset_btn_show' => false,
+                    'reset_display_name' => 'Reset'
+                ],
+                'default_asc_desc_sort_by' => [
+                    'order' => 'DESC',
+                    'orderby' => 'date',
+                    // 'meta_key' => 'end_date_and_time'
+                ],
+                'fields' => [
+                    ['display_name' => '', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
+                ]
             ]
         ];
+    }
+
+
+    /**
+     * 
+     */
+    protected static function search_page_filter_fields()
+    {
+        $filter_fields = self::default_filter_fields()['csf_unique_default_filter_name'];
+        $filter_fields_name = 'search_page'; //filter name should be post type to query and filter by main wp query 
+        $filter_fields['post_type']  = 'search_page'; // post type to filter
+        $filter_fields['is_main_query'] = false;
+        $filter_fields['search_filter_title'] = ''; // Search filter title in the search form
+        $filter_fields['fields']  = [
+            ['display_name' => '', 'search_name' => 's', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
+        ];
+        $filter_fields['fields_actions']  = [
+            'auto_submit' => true,
+            'submit_btn_show' => false,
+            'submit_display_name' => 'Search',
+            'reset_btn_show' => false,
+            'reset_display_name' => 'Reset'
+        ];
+        return [$filter_fields_name =>  $filter_fields];
     }
 
     /**
@@ -174,120 +207,6 @@ class CSF_Fields
         ];
     }
 
-    /**
-     * 
-     */
-    protected static function application_tool_filter_fields()
-    {
 
-        // Tools archive page Filter
-        $filter_fields = [];
-        $filter_fields_name = 'application-tool'; //filter name should be post type to query and filter by main wp query 
-        $filter_fields['post_type']  = $filter_fields_name; // post type to filter
-        // $filter_fields['taxonomies']  = 'tools-country'; // seperate the multiple taxonomy by (,) comma
-        $filter_fields['is_main_query'] = true;
-        $filter_fields['posts_per_page'] = 24; // post per page in post wq query result page
-        $filter_fields['search_filter_title'] = ''; // Search filter title in the search form
-        $filter_fields['field_relation'] = "AND";
-        $filter_fields['dynamic_filter_item'] = true;
-        $filter_fields['fields_actions']  = [
-            'auto_submit' => true,
-            'submit_btn_show' => false,
-            'submit_display_name' => 'Search',
-            'reset_btn_show' => true,
-            'reset_display_name' => 'Reset'
-        ];
-        $filter_fields['fields']  = [
-            ['display_name' => '', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
-            ['display_name' => 'Service Area', 'filter_term_type' => 'metadata', 'filter_term_key' => 'related_service_area', 'metadata_reference' => 'post', 'search_field_type' => 'checkbox'],
-            // ['display_name' => 'Year', 'filter_term_type' => 'metadata', 'filter_term_key' => 'publication_year_only', 'search_field_type' => 'checkbox'],
-            ['display_name' => ' Geographical Region', 'filter_term_type' => 'metadata', 'filter_term_key' => 'tools_country', 'metadata_reference' => 'taxonomy,tools-country', 'search_field_type' => 'checkbox',],
-        ];
-        // $filter_fields['free_search']['meta_keys'] = ['description', 'publication_year_only']; //applied only in "OR" relation
-        // $filter_fields['free_search']['post_taxonomies'] = ['tools-country'];
-
-
-        // return field settings
-        $fields[$filter_fields_name]  = $filter_fields;
-        return $fields;
-    }
-
-    /**
-     * 
-     */
-    protected static function event_filter_fields()
-    {
-        // 
-        $filter_items_date = [
-            [
-                'slug' => 'upcoming',
-                'name' => 'Upcoming Events'
-            ],
-            [
-                'slug' => 'past',
-                'name' => 'Past Events'
-            ],
-        ];
-
-        // Update post archive page Filter
-        $filter_fields = [];
-        $filter_fields_name = 'event'; //filter name should be post type to query and filter by main wp query 
-        $filter_fields['post_type']  = $filter_fields_name; // post type to filter
-        $filter_fields['is_main_query'] = true;
-        $filter_fields['posts_per_page'] = 6; // post per page in post wq query result page
-        $filter_fields['search_filter_title'] = ''; // Search filter title in the search form
-        $filter_fields['field_relation'] = "AND";
-        $filter_fields['display_count'] = 0;
-        $filter_fields['result_filter_area'] = ''; // section html id
-        $filter_fields['dynamic_filter_item'] = true;
-        $filter_fields['default_asc_desc_sort_by'] = [
-            'order' => 'DESC',
-            'orderby' => 'date',
-            // 'meta_key' => 'end_date_and_time'
-        ];
-
-        $filter_fields['fields_actions']  = [
-            'auto_submit' => false,
-            'submit_btn_show' => true,
-            'submit_display_name' => 'Search',
-            'reset_btn_show' => true,
-            'reset_display_name' => 'Reset'
-        ];
-        $filter_fields['fields']  = [
-            ['display_name' => '', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
-            ['display_name' => 'Service Area', 'filter_term_type' => 'metadata', 'filter_term_key' => 'related_service_area', 'metadata_reference' => 'post', 'search_field_type' => 'checkbox'],
-            ['display_name' => 'Event Type', 'filter_term_type' => 'metadata', 'filter_items' => $filter_items_date, 'filter_term_key' => 'end_date_and_time', 'metadata_reference' => 'past_upcoming_date_compare', 'search_field_type' => 'radio'],
-            ['display_name' => 'Sort By Title', 'filter_term_type' => 'metadata', 'filter_term_key' => 'title', 'metadata_reference' => 'asc_desc_sort_by', 'search_field_type' => 'dropdown'],
-            // ['display_name' => 'Sort By End date', 'filter_term_type' => 'metadata', 'filter_term_key' => 'meta_value', 'metadata_reference' => 'asc_desc_sort_by,end_date_and_time', 'search_field_type' => 'dropdown'],
-        ];
-        return [
-            $filter_fields_name => $filter_fields
-        ];
-    }
-
-    /**
-     * 
-     */
-    protected static function search_page_filter_fields()
-    {
-        $filter_fields = [];
-        $filter_fields_name = 'search_page'; //filter name should be post type to query and filter by main wp query 
-        $filter_fields['post_type']  = 'search_page'; // post type to filter
-        $filter_fields['is_main_query'] = false;
-        $filter_fields['search_filter_title'] = ''; // Search filter title in the search form
-        $filter_fields['fields']  = [
-            ['display_name' => '', 'search_name' => 's', 'search_field_type' => 'search_text', 'placeholder' => 'Search by keyword'],
-        ];
-        $filter_fields['fields_actions']  = [
-            'auto_submit' => false,
-            'submit_btn_show' => false,
-            'submit_display_name' => 'Search',
-            'reset_btn_show' => false,
-            'reset_display_name' => 'Reset'
-        ];
-        return [
-            $filter_fields_name => array_merge(self::default_filter_fields(), $filter_fields)
-        ];
-    }
     // End
 }

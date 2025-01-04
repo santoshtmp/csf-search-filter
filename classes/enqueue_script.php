@@ -4,7 +4,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.1
+ * Version: 1.2
  * =======================================
  */
 
@@ -17,15 +17,14 @@ if (!defined('ABSPATH')) {
 class CSF_Enqueue
 {
     // 
-    public static function csf_search_js($form_id = ['csf-filter-form'], $filter_name = '')
-    {
+    public static function csf_search_js(
+        $form_id = ['csf-filter-form'],
+        $filter_name = '',
+        $dynamic_filter_item = false,
+        $update_url = false
+    ) {
         $js_file_path = 'csf-search-filter/js/csf-search-filter.js';
-        try {
-            \Vite::enqueue_module();
-            $js_file_path_url = \Vite::asset($js_file_path);
-        } catch (\Throwable $th) {
-            $js_file_path_url = get_stylesheet_directory_uri() . '/' . $js_file_path;
-        }
+        $js_file_path_url = get_stylesheet_directory_uri() . '/' . $js_file_path;
         wp_enqueue_script(
             'csf-filter',
             $js_file_path_url,
@@ -39,6 +38,8 @@ class CSF_Enqueue
         wp_localize_script('csf-filter', 'csf_obj', [
             'form_ids' => wp_json_encode($form_id),
             'filter_name' => $filter_name,
+            'dynamic_filter_item' => $dynamic_filter_item,
+            'update_url' => $update_url
         ]);
     }
 

@@ -5,7 +5,7 @@
  * =========================================
  * Plugin Name: CSF - Search Filter library
  * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.1
+ * Version: 1.2
  * =======================================
  * echo do_shortcode('[csf_searchfilter filter_name = "filter_name" post_type = "post_type" ]');
  */
@@ -47,6 +47,18 @@ class CSF_shortcode
         $post_type = $atts['post_type'];
         $data_url = $atts['data_url'];
         $result_show = $atts['result_show'];
+        // 
+        if (!$filter_name) {
+            return "csf_searchfilter filter_name is required";
+        }
+        if ($filter_name = 'default' && $post_type = 'default') {
+            $filter_name = $post_type = get_post_type();
+        }
+        if (is_search()) {
+            $filter_name = $post_type = 'search_page';
+            $data_url = home_url('/');
+        }
+        // 
         $search_form = [
             "filter_name" => $filter_name,
             'form_id' => $form_id,
@@ -54,10 +66,7 @@ class CSF_shortcode
             'post_type' => $post_type,
             'data_url' => $data_url,
         ];
-        // 
-        if (!$filter_name) {
-            return "csf_searchfilter filter_name is required";
-        }
+
         // 
         if ($result_show === 'true') {
             $search_fields = \csf_search_filter\CSF_Fields::set_search_fields();
