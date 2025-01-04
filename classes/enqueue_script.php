@@ -23,8 +23,7 @@ class CSF_Enqueue
         $dynamic_filter_item = false,
         $update_url = false
     ) {
-        $js_file_path = 'csf-search-filter/js/csf-search-filter.js';
-        $js_file_path_url = get_stylesheet_directory_uri() . '/' . $js_file_path;
+        $js_file_path_url = csf_path_url . 'js/csf-search-filter.js';
         wp_enqueue_script(
             'csf-filter',
             $js_file_path_url,
@@ -68,15 +67,7 @@ class CSF_Enqueue
             )
         );
         // csf js
-
-        $js_file_path = 'csf-search-filter/js/csf_admin_settings.js';
-        try {
-            \Vite::enqueue_module();
-            $js_file_path_url = \Vite::asset($js_file_path);
-        } catch (\Throwable $th) {
-            $js_file_path_url = get_stylesheet_directory_uri() . '/' . $js_file_path;
-        }
-
+        $js_file_path_url = csf_path_url . 'js/csf_admin_settings.js';
         wp_enqueue_script(
             'csf_admin_settings',
             $js_file_path_url,
