@@ -3,8 +3,8 @@
 /**
  * =========================================
  * Plugin Name: CSF - Search Filter library
- * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.2
+ * Description: A plugin for search filter to generate form and query the form, used full for developer. 
+ * Version: 1.3
  * =======================================
  */
 
@@ -262,7 +262,8 @@ class CSF_Query
                                             if ($radio_always_active && ! $_GET_field_name_val) {
                                                 $dynamic_filter_item = (isset($field['dynamic_filter_item'])) ? $field['dynamic_filter_item'] : false;
                                                 $radio_metadata_reference = (isset($field['metadata_reference'])) ? $field['metadata_reference'] : '';
-                                                $filter_items = \csf_search_filter\CSF_Data::get_csf_metadata($post_type, $filter_term_key, $radio_metadata_reference, $dynamic_filter_item);
+                                                $item_orderby = (isset($field['item_orderby'])) ? $field['item_orderby'] : '';
+                                                $filter_items = \csf_search_filter\CSF_Data::get_csf_metadata_items($post_type, $filter_term_key, $radio_metadata_reference, $dynamic_filter_item, $all_post_ids = [], $item_orderby);
                                                 foreach ($filter_items  as $key => $value) {
                                                     $_GET_field_name_val =  $value['slug'];
                                                     break;

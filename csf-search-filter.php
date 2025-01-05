@@ -7,7 +7,7 @@ Description: CSF - Search Filter library plugin purpose to make search filter ea
 Contributors: younginnovations, santoshtmp7
 Plugin URI: https://github.com/santoshtmp/csf-search-filter
 Tags: CSF, search, form, query
-Version: 1.2
+Version: 1.3
 Author: YIPL santoshtmp7
 Author URI: 
 Requires WP: 6.0

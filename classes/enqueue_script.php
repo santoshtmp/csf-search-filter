@@ -3,8 +3,8 @@
 /**
  * =========================================
  * Plugin Name: CSF - Search Filter library
- * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.2
+ * Description: A plugin for search filter to generate form and query the form, used full for developer. 
+ * Version: 1.3
  * =======================================
  */
 
@@ -67,6 +67,7 @@ class CSF_Enqueue
             )
         );
         // csf js
+
         $js_file_path_url = csf_path_url . 'js/csf_admin_settings.js';
         wp_enqueue_script(
             'csf_admin_settings',

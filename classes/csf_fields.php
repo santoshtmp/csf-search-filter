@@ -3,8 +3,8 @@
 /**
  * =========================================
  * Plugin Name: CSF - Search Filter library
- * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.2
+ * Description: A plugin for search filter to generate form and query the form, used full for developer. 
+ * Version: 1.3
  * =======================================
  */
 
@@ -47,7 +47,6 @@ class CSF_Fields
      * dynamic_filter_item=> true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.
      * update_url=> true or false; ; OPTIONAL; default false; // To change/update url on filter
      * default_asc_desc_sort_by = [ "order"=>"ASC", "orderby"=>"", "meta_key"=>""]; OPTIONAL
-     * result_template=>'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme
      * fields => []; // filter fields lists and its fields values as defined below.
      * fields_actions =>[] // Search filter action like auto submit, submit and reset button
      * free_search=>[] // define the meta_key and taxonomy to accept free text search; free_search will only work with field_relation="OR"
@@ -63,7 +62,8 @@ class CSF_Fields
      * search_field_type => 'dropdown' or 'checkbox' or 'search_text' or 'radio'; there can only be one 'search_text' on each filter
      * placeholder => 'free text' ;only apply to search_field_type search_text
      * radio_always_active => true or false; OPTIONAL; only applied to search_field_type===radio
-     * hidden_field =>true or false; ; OPTIONAL; default false; // To hide the field in filter form
+     * hidden_field =>true or false; OPTIONAL; default false; // To hide the field in filter form
+     * item_orderby => ASC, DESC, null; OPTIONAL; default ASC; // To re-arrange the filter items in dropdown, radio or checkbox options; Where, filter_term_type === 'metadata'
      * filter_items=> [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; If this is defined, it will replace the filter items.
      * ------------------------------------------------------------------
      * Each filter "fields_actions" values has following options $fields['unique_filter_name']['fields_actions']
@@ -191,7 +191,6 @@ class CSF_Fields
         $filter_fields['free_search']['meta_keys'] = ['description', 'publication_year_only']; //applied only in "OR" relation
         // $filter_fields['free_search']['post_taxonomies'] = ['keywords-tag', 'resource-type', 'commodity-type', 'resource-sector', 'format'];
         $filter_fields['field_relation'] = "AND";
-        // $filter_fields['result_template'] = "";
         $filter_fields['dynamic_filter_item'] = true;
         $filter_fields['fields_actions']  = [
             'auto_submit' => true,

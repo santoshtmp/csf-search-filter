@@ -11,7 +11,7 @@ Requires PHP: 8.0
 Domain Path: languages
 Text Domain: csf-search-filter
 Stable tag: 1.0
-Version: 1.2
+Version: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,8 +48,11 @@ Yes, we can apply to only selected post type.
 * Added filter option "radio_always_active" for search_field_type===radio
 * Added filter option "hidden_field" to hide field
 * Added filter option "update_url" to update url on filter form result
+= 1.3.0 =
+* Added filter option "item_orderby" ASC, DESC, null; To re-arrange the filter items in dropdown, radio or checkbox options; Where, filter_term_type === 'metadata'
 * Add hook "set_csf_search_fields" to modify fields from other plugins or theme
-* Add hook "search_filter_form_{filtername}_{post_type}" to modify Form fields output other plugins or theme
+* Add hook "search_filter_form_{filtername}_{post_type}" to modify "Search Form" fields with other plugins or theme
+* Add hook "search_filter_result_{filtername}_{post_type}" to modify result result template for shortcode '[csf_searchfilter filter_name="default" result_show="true"]'
 
 == Upgrade Notice ==
 = 1.0.0 =

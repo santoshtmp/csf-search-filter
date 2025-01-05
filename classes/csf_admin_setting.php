@@ -3,8 +3,8 @@
 /**
  * =========================================
  * Plugin Name: CSF - Search Filter library
- * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.2
+ * Description: A plugin for search filter to generate form and query the form, used full for developer. 
+ * Version: 1.3
  * =======================================
  */
 
@@ -118,8 +118,8 @@ class CSF_Admin_setting
     ?>
         <textarea id="csf_set_search_fields" name="csf_set_search_fields" style="display: none;"><?php echo esc_attr($value); ?></textarea>
         <div class="info" style="margin-bottom: 7px;">
-            <button type="button" id="csf_set_search_fields_format">Format Code</button>
-            <button type="button" class="btn btn-primary" data-action="csf_set_search_fields_default"> Set Default Value</button>
+            <button type="button" id="csf_set_search_fields_format">Format Value</button>
+            <button type="button" class="btn btn-primary" data-action="csf_set_search_fields_default"> Show Default Value</button>
             <button type="button" class="help_btn" help-info-id="csf_search_fields_help_desc">
                 Set Search Form Field Help
                 <img src="<?php echo esc_attr($close_icon_url); ?>" alt="close-icon" class="help-close-icon" style="height: 14px; display: none;">
@@ -146,7 +146,6 @@ class CSF_Admin_setting
                             "display_count":1
                             "result_filter_area":"output-filter",
                             "field_relation":"OR",
-                            "result_template":"",
                             "dynamic_filter_item":true,
                             "default_asc_desc_sort_by":{
                                 "order": "DESC",
@@ -183,14 +182,12 @@ class CSF_Admin_setting
                     }</pre>
 
                 <pre>
-// Add filter fields for "event" archive page Filter using hook "set_csf_search_fields"
+// Add filter fields for "event" archive page search filter using hook "set_csf_search_fields"
 add_filter('set_csf_search_fields', 'event_filter_fields');
 function event_filter_fields($csf_filters)
 {
     $filter_fields = $csf_filters['csf_unique_default_filter_name'];
-    // 
     $filter_fields['post_type'] = 'event'; // post type to filter
-    // Update post archive page Filter
     $filter_items_date = [
         [
             'slug' => 'upcoming',
@@ -253,7 +250,6 @@ function event_filter_fields($csf_filters)
                     </li>
                     <li>csf_search_filter['unique_filter_name']['field_relation'] = "OR / AND"; default "OR"; OPTIONAL
                     </li>
-                    <li>csf_search_filter['unique_filter_name']['result_template'] => 'archive/filter/post_name.php';OPTIONAL :: define the template file path for the current active theme;</li>
                     <li> csf_search_filter['unique_filter_name']['dynamic_filter_item'] = true or false; ; OPTIONAL; default false; // To change/load filter form items on each form submit according to result or not.</li>
                     <li> csf_search_filter['unique_filter_name']['update_url'] = true or false; ; OPTIONAL; default false; // To change/update url on filter</li>
                     <li> csf_search_filter['unique_filter_name']['default_asc_desc_sort_by'] = [ "order"=>"ASC", "orderby"=>"", "meta_key"=>""]; OPTIONAL.</li>
@@ -278,6 +274,7 @@ function event_filter_fields($csf_filters)
                             <li>placeholder => 'free text' ;only apply to search_field_type search_text</li>
                             <li>radio_always_active => => true or false; OPTIONAL; only applied to search_field_type===radio</li>
                             <li>hidden_field =>true or false; ; OPTIONAL; default false; // To hide the field in filter form</li>
+                            <li>item_orderby => ASC, DESC, null; OPTIONAL; default ASC; // To re-arrange the filter items in dropdown, radio or checkbox options; Where, filter_term_type === 'metadata' </li>
                             <li>filter_items => [['slug'=>'slug','name'=>'name'], ['slug'=>'slug','name'=>'name']]; OPTIONA; If this is defined, it will replace the filter items. </li>
                         </ol>
                     </li>
@@ -318,10 +315,9 @@ function event_filter_fields($csf_filters)
         all_post_ids => []
     ];
     \csf_search_filter\CSF_Form::the_search_filter_form($search_form);
-
     OR 
-
-    echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" post_type = "post_type" ]');
+    echo do_shortcode('[csf_searchfilter filter_name="default" post_type="default" ]');  
+    echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" post_type="post_type" ]');
 
                     </pre>
                 <ol>
@@ -335,15 +331,15 @@ function event_filter_fields($csf_filters)
             </div>
             <div id="csf_result_display_help_desc" class="help-info" style="display: none; ">
                 <h4>CSF Filter Result Display Setting</h4>
-                <p>when applied is_main_query==true, then current query is applied and result is shown in current main query.</p>
+                <p>when applied is_main_query==true, then current query is applied and result is shown in current main query the the default page.</p>
                 <pre>
-        echo do_shortcode('[csf_searchfilter filter_name="unique_filter_name" result_show="true"]');  
+        echo do_shortcode('[csf_searchfilter filter_name="filter_name_related_to_post_type" result_show="true"]');  
         OR  
-        &lt;div id="csf-result-area-filter_name" &gt; -- loop content -- &lt;/div&gt; 
+        &lt;div id="csf-result-area-filter_name" &gt; -- default current loop content -- &lt;/div&gt; 
                 </pre>
                 <p>
                     Use shortcode <br> OR <br>
-                    CSF Search Filter Result area must be wrap by the id = "csf-result-area-filter_name" inorder to display/replace the result by ajax. Here filter_name should be replace.
+                    CSF Search Filter Result area must be wrap by the id = "result_area_id" inorder to display/replace the result by ajax. Here result_area_id is shown in current form attribur as "result-area-id" or "csf-result-area-output-filter".
                     <br>
                     For the result template csf query result is stored in variable $csf_query.
                 </p>

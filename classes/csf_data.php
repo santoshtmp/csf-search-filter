@@ -3,8 +3,8 @@
 /**
  * =========================================
  * Plugin Name: CSF - Search Filter library
- * Description: A plugin for search filter to generate form and query the form, usedfull for deeveloper. 
- * Version: 1.2
+ * Description: A plugin for search filter to generate form and query the form, used full for developer. 
+ * Version: 1.3
  * =======================================
  */
 
@@ -16,8 +16,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-
-
 // class to handle SF data
 class CSF_Data
 {
@@ -25,10 +23,20 @@ class CSF_Data
     /**
      * @param string $post_type
      * @param string  $meta_key => filter_term_key
-     * @return array 
+     * @param string  $metadata_reference
+     * @param bool  $dynamic_filter_item
+     * @param array  $all_post_ids
+     * @param string  $item_orderby
+     * @return array $filter_items / $meta_info
      */
-    public static function get_csf_metadata($post_type, $meta_key, $metadata_reference = '', $dynamic_filter_item = false, $all_post_ids = [])
-    {
+    public static function get_csf_metadata_items(
+        $post_type,
+        $meta_key,
+        $metadata_reference = '',
+        $dynamic_filter_item = false,
+        $all_post_ids = [],
+        $item_orderby = 'ASC'
+    ) {
         if (!$post_type || !$meta_key) {
             return;
         }
@@ -73,6 +81,14 @@ class CSF_Data
                     wp_reset_postdata();
                 }
             }
+        }
+
+        if ($item_orderby == 'ASC') {
+            array_multisort(array_column($meta_info, 'name'), SORT_ASC, $meta_info);;
+        } else if ($item_orderby == 'DESC') {
+            array_multisort(array_column($meta_info, 'name'), SORT_DESC, $meta_info);
+        } else {
+            $meta_info = array_values($meta_info);
         }
 
         return $meta_info;

@@ -3,8 +3,8 @@
 /**
  * =========================================
  * Plugin Name: CSF - Search Filter library
- * Description: A plugin for search filter to generate form and query the form, usedfull for developer. 
- * Version: 1.2
+ * Description: A plugin for search filter to generate form and query the form, used full for developer. 
+ * Version: 1.3
  * =======================================
  */
 
@@ -108,8 +108,8 @@ class CSF_Form
                 class='<?php echo esc_attr($form_class); ?>' data-url="<?php echo esc_attr($data_url); ?>" role="search"
                 result-area-id="<?php echo esc_attr($result_area_id) ?>">
                 <?php
-                $hook_name = 'search_filter_form_' . str_replace([' ', '-'], '_', strtolower($filter_name)) . '_' . $post_type;
-                if (has_filter($hook_name)) {
+                $hook_filter_name = 'search_filter_form_' . str_replace([' ', '-'], '_', strtolower($filter_name)) . '_' . $post_type;
+                if (has_filter($hook_filter_name)) {
                     $args = [
                         'form_id' => $form_id,
                         'post_type' => $post_type,
@@ -118,7 +118,7 @@ class CSF_Form
                         'all_post_ids' => $all_post_ids,
                         'display_count_selected' => $display_count_selected,
                     ];
-                    $value = apply_filters($hook_name, $fields, $args);
+                    $value = apply_filters($hook_filter_name, $fields, $args);
                     $has_search_text_get_value = isset($value['has_search_text_get_value']) ? $value['has_search_text_get_value'] : '';
                     $has_drop_down_get_value = isset($value['has_drop_down_get_value']) ? $value['has_drop_down_get_value'] : '';
                     $has_checkbox_get_value = isset($value['has_checkbox_get_value']) ? $value['has_checkbox_get_value'] : '';
@@ -165,7 +165,8 @@ class CSF_Form
                                 $filter_items = get_terms(['taxonomy' => $filter_term_key, 'hide_empty' => true]);
                             }
                             if ($filter_term_type === 'metadata') {
-                                $filter_items = \csf_search_filter\CSF_Data::get_csf_metadata($post_type, $filter_term_key, $metadata_reference, $dynamic_filter_item, $all_post_ids);
+                                $item_orderby = (isset($field['item_orderby'])) ? $field['item_orderby'] : 'ASC';
+                                $filter_items = \csf_search_filter\CSF_Data::get_csf_metadata_items($post_type, $filter_term_key, $metadata_reference, $dynamic_filter_item, $all_post_ids, $item_orderby);
                             }
                         }
                         if ($metadata_reference == 'past_upcoming_date_compare' && $display_count) {
@@ -364,11 +365,6 @@ class CSF_Form
             <div class="filter-item-list-wrapper ">
                 <div class="filter-item-list">
                     <?php
-                    if ($field_name == 'csf_year') {
-                        array_multisort(array_column($filter_items, 'name'), SORT_DESC, $filter_items);
-                    } else {
-                        array_multisort(array_column($filter_items, 'name'), SORT_ASC, $filter_items);
-                    }
                     foreach ($filter_items as $each_key => $value) {
                         $value = (array) $value;
                         $checkbox_checked = '';
@@ -434,11 +430,6 @@ class CSF_Form
             <div class="filter-item-list-wrapper ">
                 <div class="filter-item-list-wrapper">
                     <?php
-                    if ($field_name == 'csf_year') {
-                        array_multisort(array_column($filter_items, 'name'), SORT_DESC, $filter_items);
-                    } else {
-                        array_multisort(array_column($filter_items, 'name'), SORT_ASC, $filter_items);
-                    }
                     foreach ($filter_items as $each_key => $value) {
                         $value = (array) $value;
                         $radio_checked = '';
