@@ -53,9 +53,6 @@ class CSF
         $search_filter_query = new \csf_search_filter\CSF_Query();
         $csf_admin_settings = new \csf_search_filter\CSF_Admin_setting();
         $csf_shortcode = new \csf_search_filter\CSF_shortcode();
-        // $csf_data = new \csf_search_filter\CSF_Data();
-        // $csf_enqueue = new \csf_search_filter\CSF_Enqueue();
-        // var_dump($sdss);
     }
 
 }
