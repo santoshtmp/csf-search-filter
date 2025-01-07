@@ -127,6 +127,8 @@ class CSF_Query
         $meta_query = [];
         $sort_order_by = [];
 
+        // 
+        $query->set('post_status', ['publish']);
         // post per page 
         $posts_per_page = (isset($fields_settings['posts_per_page'])) ? $fields_settings['posts_per_page'] : '';
         if ($posts_per_page) {
@@ -397,6 +399,8 @@ class CSF_Query
                 if (isset($default_asc_desc_sort_by['meta_key'])) {
                     $query->set('meta_key', $default_asc_desc_sort_by['meta_key']);
                 }
+            } else {
+                $query->set('orderby', "menu_order");
             }
         }
 

@@ -145,9 +145,14 @@ class CSF_Data
                 $meta_val_parent = $reference['meta_val_parent'];
             }
         }
+        // 
         if ($return_field_term_id) {
             $meta_info[$meta_val] = $meta_val_term_id;
         } else {
+            $metadata_reference = explode(',', $metadata_reference);
+            if ($metadata_reference[0] == 'taxonomy' && !$meta_val_term_id) {
+                return $meta_info;
+            }
             if (isset($meta_info[$meta_val])) {
                 if (array_key_exists($meta_val, $meta_info)) {
                     $meta_info[$meta_val]['count'] = $meta_info[$meta_val]['count'] + 1;
@@ -175,10 +180,11 @@ class CSF_Data
      */
     public static function check_metadata_reference($meta_val, $metadata_reference)
     {
-        $current_term = $meta_val_parent =  $meta_val_term_id = $meta_val_name = $meta_val_slug = $meta_val;
+        $meta_val_parent =  $meta_val_term_id = $meta_val_name = $meta_val_slug = $meta_val;
         $metadata_reference = explode(',', $metadata_reference);
         if (isset($metadata_reference[0])) {
             if ($metadata_reference[0] == 'taxonomy') {
+                $current_term = '';
                 if (intval($meta_val)) {
                     $current_term = get_term($meta_val);
                 } else {
@@ -191,6 +197,8 @@ class CSF_Data
                     $meta_val_slug = $current_term->slug;
                     $meta_val_parent = $current_term->parent;
                     $meta_val_term_id = $current_term->term_id;
+                } else {
+                    return '';
                 }
             } else if ($metadata_reference[0] == 'post') {
                 $meta_val_name = get_the_title($meta_val);
